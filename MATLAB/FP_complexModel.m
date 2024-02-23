@@ -37,11 +37,16 @@ function [alt_lower_bound, alt_mean, alt_upper_bound] = FP_complexModel(x, P, t,
     %% Form distribution from the propagated particles
     % Calculate Mean (should be equal to single propagated mean
     mean_particles = mean(particles);
-    % Calculate Covariance
-    covariance_particles = cov(particles);
 
+    % Calculate Covariance
+    covariance_particle = zeros(3,3);
+    for i = 1:numParticles
+        covariance_particle = covariance_particle + (particles(i,:)' - mean_particles') * ((particles(i,:)' - mean_particles'))'; 
+    end
+    %covariance_particles = cov(particles', repmat(mean_particles, numParticles, 1)');
+    
     %% Calculate 3sigma bound from the covariance matrix (upper and lower limits)
-    sigma_particles = sqrt([covariance_particles(1,1), covariance_particles(2,2), covariance_particles(3,3)]); %find SD, only need diagonal elemtns
+    sigma_particles = sqrt([covariance_particle(1,1), covariance_particle(2,2), covariance_particle(3,3)]); %find SD, only need diagonal elemtns
 
     lower_bound = mean_particles - 3*sigma_particles;
     upper_bound = mean_particles + 3*sigma_particles;

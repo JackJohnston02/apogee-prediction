@@ -21,6 +21,7 @@ H = [1 0 0; 0 0 1]; % Observation model
 Q = 0.0001 *[1 0 0 ; 
              0 1 0; 
              0 0 1]; % Process noise covariance %0.001 * eye(3) 
+
 R = diag([var(alt(1:300)), var(acc(1:300))]); % Measurement noise covariance
 
 % Initialize arrays to store the state estimates
@@ -51,7 +52,8 @@ for k = 2:length(alt)
     dt = timestamp(k) - timestamp(k-1);
 
     % Update the system dynamics
-
+    
+    Q = 10*[dt^5/20, dt^4/8, dt^3/6; dt^4/8, dt^3/3, dt^2/2; dt^3/6, dt^2/2, dt];
     A = [1 dt 0.5*dt^2; 0 1 dt; 0 0 1]; % State transition
     % Predict state and estimation error covariance
     x = A*x;
