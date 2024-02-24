@@ -1,4 +1,4 @@
-function [alt_lower_bound, alt_mean, alt_upper_bound] = FP_complexModel(x, P, t, dt)
+function [alt_lower_bound, alt_mean, alt_upper_bound] = FP_Model(x, P, t, dt)
 %FORWARDPROPAGATION Summary of this function goes here
 %   Detailed explanation goes here
     %Calcualte Cd
@@ -11,13 +11,16 @@ function [alt_lower_bound, alt_mean, alt_upper_bound] = FP_complexModel(x, P, t,
 
     g = -9.80665;
 
-    rho = 1.225 * (1 - (0.0065 * x(1)) / 288.15)^(9.80665 / (287.05 * 0.0065));%calculate the air density
+    rho = 1.225 * (1 - (0.0065 * x(1)) / 288.15)^(-g / (287.05 * 0.0065));%calculate the air density
     
     Cc = 2 * (x(3) - g) / (rho * (x(2)*x(2)));
 
     %% Generate sample of particles from the posterior mean and covariance of the rocket state
-    numParticles = 100;  
+    numParticles = 3;  
     
+    P = (P + P') / 2;%make sure P is symmetric
+
+
     particles = mvnrnd(x, P, numParticles);%Not sure if this is the correct function?
 
 
@@ -42,8 +45,8 @@ function [alt_lower_bound, alt_mean, alt_upper_bound] = FP_complexModel(x, P, t,
     covariance_particle = zeros(3,3);
     for i = 1:numParticles
         covariance_particle = covariance_particle + (particles(i,:)' - mean_particles') * ((particles(i,:)' - mean_particles'))'; 
+        covariance_particle = covariance_particle/numParticles;%Check with Joe if this is correct?
     end
-    %covariance_particles = cov(particles', repmat(mean_particles, numParticles, 1)');
     
     %% Calculate 3sigma bound from the covariance matrix (upper and lower limits)
     sigma_particles = sqrt([covariance_particle(1,1), covariance_particle(2,2), covariance_particle(3,3)]); %find SD, only need diagonal elemtns
