@@ -77,7 +77,6 @@ while ~landed && k < 2000
         x = x + K * (z - H*x);
         P = (eye(3) - K*H) * P;
         k = k + 1;
-        disp((k/2000)*100);
     end
 
     % record the states
@@ -90,12 +89,14 @@ while ~landed && k < 2000
     if ~launch_detected && x_est(2, end) > 10 % Assuming launch when velocity > 10
         launch_detected = true;
         launch_time = t;
+        disp("launched");
     end
     
     % Check motor burnout
     if launch_detected && ~motor_burntout && x_est(3, end) < 0 % Assuming motor burnout when acceleration < 0
         motor_burntout = true;
         burnout_time = t;
+        disp("burnout");
     end
 
     % Predict apogee after 0.1 second after motor burn-out and before apogee is detected
@@ -123,6 +124,7 @@ while ~landed && k < 2000
         landed = true;
         landed_time = t;
         landed_altitude = x_est(1, end);
+        disp("landed");
     end
     
 end
