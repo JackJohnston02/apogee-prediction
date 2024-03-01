@@ -1,0 +1,19 @@
+clear all
+
+dt = 0.05; %intagration step size 
+t = 0:dt:100;
+v = zeros(1,length(t));
+cd = 1;
+
+rocket.mass = 5;
+rocket.area = 1;
+rocket.cd = 1; 
+
+flight.velocity = Rk4_int(@acceleration,t,v,dt);
+flight.acceleration = acceleration(flight.velocity,t);
+
+for i=1:(length(t)-1)    
+    flight.acceleration(i+1) = acceleration_eq(flight.velocity(i)) ;
+    flight.velocity(i+1) = Rk4_int(flight.acceleration(i));
+    flight.displacement(i+1) = Rk4_int();
+end
