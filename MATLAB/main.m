@@ -1,6 +1,6 @@
 %%Kalman filter for state estimation
 clear all
-data = readtable('flight_data.csv');
+data = readtable('data/owen.csv');
 
 CROP = 2000;
 alt = data.baro_altitude(1:CROP);
@@ -51,7 +51,7 @@ k = 1;
 
 t = 0;
 times = [t];
-dt = 0.001;
+dt = 0.01;
 
 
 while ~landed && k < 2000
@@ -60,8 +60,8 @@ while ~landed && k < 2000
     %% check for new data and update measurement vector 
     
     
-    
-    Q = 3*[(dt^5)/20, (dt^4)/8, (dt^3)/6; (dt^4)/8, (dt^3)/3, (dt^2)/2; (dt^3)/6, (dt^2)/2, dt];%Dynamic process noise covariance
+    %Q = [1 0 0 ; 0 1 0; 0 0 1]; % Static rocess noise covariance %0.001 * eye(3) 
+    Q = 2*[(dt^5)/20, (dt^4)/8, (dt^3)/6; (dt^4)/8, (dt^3)/3, (dt^2)/2; (dt^3)/6, (dt^2)/2, dt];%Dynamic process noise covariance
     A = [1 dt 0.5*dt^2; 0 1 dt; 0 0 1]; % State transition
 
     % Predict state and estimation error covariance

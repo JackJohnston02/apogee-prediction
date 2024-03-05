@@ -1,6 +1,6 @@
 clear all
 
-dt = 0.05; %intagration step size 
+dt = 0.05; %integration step size 
 t = 0:dt:100;
 cd = 1;
 flight.acceleration = zeros(1,length(t));
