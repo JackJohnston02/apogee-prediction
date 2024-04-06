@@ -22,8 +22,7 @@ Q = 0.0001 *[1 0 0 ;
              0 1 0; 
              0 0 1]; % Static rocess noise covariance %0.001 * eye(3) 
 
-R = diag([var(alt(1:300)), var(acc(1:300))]); % Measurement noise covariance
-
+R = 100*diag([var(alt(1:300)), var(acc(1:300))]); % Measurement noise covariance
 % Initialize arrays to store the state estimates
 x_est = [];
 x_est(:, 1) = x;
@@ -43,8 +42,12 @@ predicted_apogee_time = 0;
 predicted_apogee_altitude = 0;
 predicted_apogee_times = [0];
 predicted_apogee_altitudes = [0];
+
+lower_bound = 0;
+upper_bound = 0;
 lower_bounds = [0];
 upper_bounds = [0];
+
 prediction_times = [0];
 
 k = 1;
@@ -52,6 +55,11 @@ k = 1;
 t = 0;
 times = [t];
 dt = 0.01;
+
+%Motor Control Input
+u = 0;
+burntime = 1.63;
+maxthrust = 0.018;
 
 
 while ~landed && k < 2000
@@ -61,11 +69,28 @@ while ~landed && k < 2000
     
     
     %Q = [1 0 0 ; 0 1 0; 0 0 1]; % Static rocess noise covariance %0.001 * eye(3) 
-    Q = 2*[(dt^5)/20, (dt^4)/8, (dt^3)/6; (dt^4)/8, (dt^3)/3, (dt^2)/2; (dt^3)/6, (dt^2)/2, dt];%Dynamic process noise covariance
-    A = [1 dt 0.5*dt^2; 0 1 dt; 0 0 1]; % State transition
+    Q =1*[(dt^5)/20, (dt^4)/8, (dt^3)/6; (dt^4)/8, (dt^3)/3, (dt^2)/2; (dt^3)/6, (dt^2)/2, dt];%Dynamic process noise covariance
+    A = [1 dt 0.5*dt^2; 
+        0 1 dt; 
+        0 0 1]; % State transition
+    
+    B = [0 0 1]';
+    
+    if launch_detected & ~motor_burntout
+        bt = burntime - (t - burnout_time);
+        %u = 2.5;
+        u = -(bt)*(bt - burntime)*(bt)*maxthrust;
+
+    end
+
+    if launch_detected & motor_burntout
+        u = 0;
+    end
+
+
 
     % Predict state and estimation error covariance
-    x = A*x;
+    x = A*x + B*u;
     P = A*P*A' + Q;
 
     % Compute Kalman gain
@@ -82,8 +107,7 @@ while ~landed && k < 2000
     % record the states
     x_est(:, end + 1) = x;
 
-
-
+    
     %% Update phase of flight
     % Check for launch 
     if ~launch_detected && x_est(2, end) > 10 % Assuming launch when velocity > 10
@@ -103,7 +127,6 @@ while ~landed && k < 2000
     if motor_burntout && t >  0.1 + burnout_time && ~apogee_detected
     
         [lower_bound, predicted_apogee_altitude, upper_bound] =  FP_Model(x, P, t, dt);
-
         predicted_apogee_altitudes = [predicted_apogee_altitudes, predicted_apogee_altitude];
         lower_bounds = [lower_bounds, lower_bound];
         upper_bounds = [upper_bounds, upper_bound];
@@ -168,8 +191,9 @@ yline(apogee_altitude, 'g', 'DisplayName', 'Actual Apogee Altitude');
 hold off;
 
 nexttile;
-scatter(prediction_times, upper_bounds - predicted_apogee_altitudes,2, 'b'); 
 
+scatter(prediction_times(2:end)-burnout_time, predicted_apogee_altitudes(2:end) - apogee_altitude,2, 'b'); 
+ylim([-10 10])
 drawnow;  % Update plot
 
       

@@ -8,7 +8,7 @@ function [alt_lower_bound, alt_mean, alt_upper_bound] = FP_Model(x, P, t, dt)
     %let Cd*A/m be a new constant, Cc
     %Cc = 2*a/(rho * v^2)
 
-
+    
     g = -9.80665;
 
     rho = 1.225 * (1 - (0.0065 * x(1)) / 288.15)^(-g / (287.05 * 0.0065));%calculate the air density
@@ -16,7 +16,7 @@ function [alt_lower_bound, alt_mean, alt_upper_bound] = FP_Model(x, P, t, dt)
     Cc = 2 * (x(3) - g) / (rho * (x(2)*x(2)));
 
     %% Generate sample of particles from the posterior mean and covariance of the rocket state
-    numParticles = 3;  
+    numParticles = 10;  
     
     P = (P + P') / 2;%make sure P is symmetric
 
