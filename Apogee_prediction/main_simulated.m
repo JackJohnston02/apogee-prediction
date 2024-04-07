@@ -1,11 +1,16 @@
 clear all
 data = readtable('data/simulated/Regulus/Regulus 100.0Hz.csv');
 motor_path = ("data/simulated/Regulus/Cesaroni_4025L1355-P.eng");
+rocket_path = ("data/simulated/Regulus/Rocket.txt");
 
 timestamp = data.Time;
 alt = data.Z;
 acc = data.Az;
 
+
+%% Add noise to data
+alt = awgn(alt,20,'measured');
+acc = awgn(acc,20,'measured');
 
 %% Set up KF
 x = [alt(1); 0; 0]; % [altitude; velocity; acceleration]
@@ -20,7 +25,7 @@ Q = [1 0 0 ;
      0 1 0; 
      0 0 1]; % Static rocess noise covariance %0.001 * eye(3) 
 
-R = 1*diag([1, 1]); % Measurement noise covariance
+R = 10*diag([1, 1]); % Measurement noise covariance
 
 rocket_mass = 9.462;
 
@@ -71,7 +76,7 @@ while ~landed && k < length(timestamp)
     times  = [times, t];
     
 
-    Q = 0.002*[(dt^5)/20, (dt^4)/8, (dt^3)/6; (dt^4)/8, (dt^3)/3, (dt^2)/2; (dt^3)/6, (dt^2)/2, dt];%Dynamic process noise covariance
+    Q = 0.01*[(dt^5)/20, (dt^4)/8, (dt^3)/6; (dt^4)/8, (dt^3)/3, (dt^2)/2; (dt^3)/6, (dt^2)/2, dt];%Dynamic process noise covariance
     A = [1 dt 0.5*dt^2; 
         0 1 dt; 
         0 0 1]; % State transition
@@ -83,11 +88,13 @@ while ~landed && k < length(timestamp)
         %of timestep sorts this.
 
     if  launch_detected && ~motor_burntout
-        u = %((motor_thrust(t, motor_path)/rocket_mass) - u);    
+        thrust = get_thrust(t - launch_time, motor_path);
+        mass = get_mass(t - launch_time, rocket_path);
+        u = (thrust)/mass;    
     end
 
     if motor_burntout
-        u = -9.81;
+        u = 0;
     end
     uout = [uout, u];
 
@@ -113,7 +120,7 @@ while ~landed && k < length(timestamp)
 
     %% Update state machine
     % Check for launch 
-    if ~launch_detected && x_est(3, end) > 1 % Assuming launch when velocity > 10
+    if ~launch_detected && x_est(3, end) > 10 % Assuming launch when velocity > 10
         launch_detected = true;
         launch_time = t;
         disp("launched");
@@ -204,10 +211,12 @@ ylim([-10 10])
 
 nexttile;
 hold on;
-scatter(times(1:1000), (x_est(3, 1:1000) - acc(1:1000,1)'))
+title('Residuals');
+scatter(times(1:400), (x_est(3, 1:400) - acc(1:400,1)'));
 xline(launch_time, 'g:', 'DisplayName', 'Launch Time');
 hold off;
 xline(burnout_time, 'g:', 'DisplayName', 'Motor Burnout Time');
+legend('Acc, est - true');
 drawnow;  % Update plot
 
 nexttile;

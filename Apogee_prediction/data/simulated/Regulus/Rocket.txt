@@ -1,0 +1,3 @@
+Dry Mass: 9.462
+Wet Mass: 12
+Burn Time: 2.97
