@@ -5,12 +5,13 @@ rocket_path = ("data/simulated/Regulus/Rocket.txt");
 
 timestamp = data.Time;
 alt = data.Z;
+vel = data.VZ;
 acc = data.Az;
 
 
 %% Add noise to data
-alt = awgn(alt,20,'measured');
-acc = awgn(acc,20,'measured');
+%alt = awgn(alt,20,'measured');
+%acc = awgn(acc,20,'measured');
 
 %% Set up KF
 x = [alt(1); 0; 0]; % [altitude; velocity; acceleration]
@@ -25,7 +26,7 @@ Q = [1 0 0 ;
      0 1 0; 
      0 0 1]; % Static rocess noise covariance %0.001 * eye(3) 
 
-R = 10*diag([1, 1]); % Measurement noise covariance
+R = 0.1*diag([1, 1]); % Measurement noise covariance
 
 rocket_mass = 9.462;
 
@@ -71,7 +72,7 @@ dt = 0.01;
 
 %% Loop
 
-while ~landed && k < length(timestamp)
+while ~landed && ~apogee_detected && k < length(timestamp)
     t = t + dt;
     times  = [times, t];
     
@@ -81,7 +82,7 @@ while ~landed && k < length(timestamp)
         0 1 dt; 
         0 0 1]; % State transition
     
-    B = [0 0 dt]';
+    B = [0 dt 0]';
     %Control Input u ~ only thrust curve for these sims
         %Can't just add the thrust needs to be converted to a force
         %If keep adding force it spirals out of control, force as faction
@@ -90,7 +91,7 @@ while ~landed && k < length(timestamp)
     if  launch_detected && ~motor_burntout
         thrust = get_thrust(t - launch_time, motor_path);
         mass = get_mass(t - launch_time, rocket_path);
-        u = (thrust)/mass;    
+        u = 0*thrust/mass;    
     end
 
     if motor_burntout
@@ -123,14 +124,14 @@ while ~landed && k < length(timestamp)
     if ~launch_detected && x_est(3, end) > 10 % Assuming launch when velocity > 10
         launch_detected = true;
         launch_time = t;
-        disp("launched");
+        disp("Launched at t=" + launch_time);
     end
     
     % Check motor burnout
     if launch_detected && ~motor_burntout && x_est(3, end) < 0 % Assuming motor burnout when acceleration < 0
         motor_burntout = true;
         burnout_time = t;
-        disp("burnout");
+        disp("Burnout at t=" + burnout_time);
     end
 
     % Predict apogee after 0.1 second after motor burn-out and before apogee is detected
@@ -149,7 +150,7 @@ while ~landed && k < length(timestamp)
         apogee_detected = true;
         apogee_time = t;
         apogee_altitude = x_est(1, end);
-        disp("apogee");
+        disp("Apogee at t=" + apogee_time);
     end
 
     % Check landed
@@ -165,64 +166,116 @@ while ~landed && k < length(timestamp)
 
 end
 
-%% Plot data
-% Final apogee detection information
-disp(['Apogee detected at time: ', num2str(apogee_time), ' seconds']);
-disp(['Apogee altitude: ', num2str(apogee_altitude), ' meters']);
 
+% Check if the first figure exists, if not, create it
+fig1 = findobj('Name', 'Figure 1');
+if isempty(fig1)
+    fig1 = figure('Name', 'Figure 1');
+else
+    figure(fig1); % Bring existing figure to front
+end
 
-clf;  % Clear  figure
-tiledlayout(2,2);
+% Clear figure 1
+clf(fig1);
+
+% Create tiled layout in figure 1
+tiledlayout(fig1, 1, 1);
 
 % Altitude estimates and measured data
 nexttile;
-plot(timestamp, alt, 'y');
+plot(timestamp(1:k), alt(1:k), 'y');
 hold on;
-plot(times, x_est(1, :), 'b');
+plot(times(1:k), x_est(1, 1:k), 'b');
 
-%Plot lower, mean and upper of apogee predictions
-
-scatter(prediction_times, lower_bounds,2, 'r'); 
-scatter(prediction_times, predicted_apogee_altitudes,3, 'g'); 
-scatter(prediction_times, upper_bounds,2, 'b'); 
+% Plot lower, mean, and upper of apogee predictions
+scatter(prediction_times, lower_bounds, 2, 'r'); 
+scatter(prediction_times, predicted_apogee_altitudes, 3, 'g'); 
+scatter(prediction_times, upper_bounds, 2, 'b'); 
 
 title('Altitude Estimates and Measured Data');
 xlabel('Time (s)');
 ylabel('Altitude (m)');
 legend('Measured Altitude', 'Estimated Altitude', 'Propagated Altitude');
-
-
-
 xline(launch_time, 'g:', 'DisplayName', 'Launch Time');
-
 xline(burnout_time, 'g:', 'DisplayName', 'Motor Burnout Time');
-
 xline(apogee_time, 'g', 'DisplayName', 'Actual Apogee Time');
 yline(apogee_altitude, 'g', 'DisplayName', 'Actual Apogee Altitude');
-
-
 hold off;
 
+% Check if the second figure exists, if not, create it
+fig2 = findobj('Name', 'Figure 2');
+if isempty(fig2)
+    fig2 = figure('Name', 'Figure 2');
+else
+    figure(fig2); % Bring existing figure to front
+end
+
+% Clear figure 2
+clf(fig2);
+
+% Create tiled layout in figure 2
+tiledlayout(fig2, 3, 2);
+
+% Altitude estimates and measured data
 nexttile;
-
-scatter(prediction_times(2:end)-burnout_time, predicted_apogee_altitudes(2:end) - apogee_altitude,2, 'b'); 
-ylim([-10 10])
-
-
-nexttile;
+plot(timestamp(1:k), alt(1:k), 'y');
 hold on;
-title('Residuals');
-scatter(times(1:400), (x_est(3, 1:400) - acc(1:400,1)'));
-xline(launch_time, 'g:', 'DisplayName', 'Launch Time');
-hold off;
-xline(burnout_time, 'g:', 'DisplayName', 'Motor Burnout Time');
-legend('Acc, est - true');
-drawnow;  % Update plot
+plot(times(1:k), x_est(1, 1:k), 'b');
 
-nexttile;
-hold on;
-scatter(times(1:1000), uout(1:1000))
-xline(launch_time, 'g:', 'DisplayName', 'Launch Time');
+title('Altitude Estimates and Measured Data');
+xlabel('Time (s)');
+ylabel('Altitude (m)');
+legend('Measured Altitude', 'Estimated Altitude');
 hold off;
-xline(burnout_time, 'g:', 'DisplayName', 'Motor Burnout Time');
-drawnow;  % Update plot
+
+% Altitude residuals
+nexttile;
+scatter(timestamp(1:k), (alt(1:k) - x_est(1, 1:k)'), 'r');
+
+title('Altitude Residuals');
+xlabel('Time (s)');
+ylabel('Altitude (m)');
+legend('True - estimate');
+
+% Velocity estimates and measured data
+nexttile;
+plot(timestamp(1:k), vel(1:k), 'y');
+hold on;
+plot(times(1:k), x_est(2, 1:k), 'b');
+
+title('Velocity Estimates and Measured Data');
+xlabel('Time (s)');
+ylabel('Velocity (m/s)');
+legend('Measured Velocity', 'Estimated Velocity');
+hold off;
+
+% Velocity residuals
+nexttile;
+scatter(times(1:k), (vel(1:k) - x_est(2, 1:k)'), 'r'); % Change plot type to scatter
+
+title('Velocity Residuals');
+xlabel('Time (s)');
+ylabel('Velocity (m/s)');
+legend('True - estimate');
+
+% Acceleration estimates and measured data
+nexttile;
+plot(timestamp(1:k), acc(1:k), 'y');
+hold on;
+plot(times(1:k), x_est(3, 1:k), 'b');
+
+title('Acceleration Estimates and Measured Data');
+xlabel('Time (s)');
+ylabel('Acceleration (m/s^2)');
+legend('Measured Acceleration', 'Estimated Acceleration');
+hold off;
+
+% Acceleration residuals
+nexttile;
+scatter(times(1:k), (acc(1:k) - x_est(3, 1:k)'), 'r'); % Change plot type to scatter
+
+title('Acceleration Residuals');
+xlabel('Time (s)');
+ylabel('Acceleration (m/s^2)');
+legend('True - estimate');
+
