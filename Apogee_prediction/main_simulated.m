@@ -28,6 +28,7 @@ x_est = [];
 x_est(:, 1) = x;
 B = [0 0 1]';
 u = 0;
+uout = [];
 
 
 %% Set up statemachine
@@ -82,12 +83,13 @@ while ~landed && k < length(timestamp)
         %of timestep sorts this.
 
     if  launch_detected && ~motor_burntout
-        u = 0;%(motor_thrust(t, "Cesaroni_4025L1355-P") / rocket_mass) - 9.81;    
+        u = ((motor_thrust(t, "Cesaroni_4025L1355-P")/rocket_mass) - u);    
     end
 
     if motor_burntout
         u = -9.81;
     end
+    uout = [uout, u];
 
     % Predict state and estimation error covariance
     x = A*x + B*u;
@@ -163,7 +165,7 @@ disp(['Apogee altitude: ', num2str(apogee_altitude), ' meters']);
 
 
 clf;  % Clear  figure
-tiledlayout(1,3);
+tiledlayout(2,2);
 
 % Altitude estimates and measured data
 nexttile;
@@ -203,6 +205,14 @@ ylim([-10 10])
 nexttile;
 hold on;
 scatter(times(1:1000), (x_est(3, 1:1000) - acc(1:1000,1)'))
+xline(launch_time, 'g:', 'DisplayName', 'Launch Time');
+hold off;
+xline(burnout_time, 'g:', 'DisplayName', 'Motor Burnout Time');
+drawnow;  % Update plot
+
+nexttile;
+hold on;
+scatter(times(1:1000), uout(1:1000))
 xline(launch_time, 'g:', 'DisplayName', 'Launch Time');
 hold off;
 xline(burnout_time, 'g:', 'DisplayName', 'Motor Burnout Time');

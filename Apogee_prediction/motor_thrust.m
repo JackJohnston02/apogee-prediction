@@ -1,7 +1,7 @@
-function [thrust_derivative] = motor_thrust(t,motor_name)
+function [thrust] = motor_thrust(t,motor_name)
 
 % Create the file path
-file_path = fullfile('motors/' + motor_name +  '.eng');
+file_path = fullfile('motors/', motor_name +  '.eng');
 
 % Open the file
 fileID = fopen(file_path, 'r');
@@ -25,16 +25,8 @@ end
 % Convert cell array to matrix
 thrust_data = cell2mat(thrust_data);
 
-% Compute the derivative of the thrust
-time_diff = diff(thrust_data(:,1));
-force_diff = diff(thrust_data(:,2));
-thrust_derivative = force_diff ./ time_diff;
+% Interpolate the thrust at time t
+thrust = interp1(thrust_data(:,1), thrust_data(:,2), t, 'linear', 'extrap');
 
-% Set any negative values to zero
-thrust_derivative(thrust_derivative < 0) = 0;
-
-% Interpolate the derivative data
-thrust_derivative = interp1(thrust_data(1:end-1,1), thrust_derivative, t, 'linear', 'extrap');
-
-
+thrust(thrust < 0) = 0;
 end
