@@ -70,21 +70,23 @@ while ~landed && k < length(timestamp)
     times  = [times, t];
     
 
-    Q = [(dt^5)/20, (dt^4)/8, (dt^3)/6; (dt^4)/8, (dt^3)/3, (dt^2)/2; (dt^3)/6, (dt^2)/2, dt];%Dynamic process noise covariance
+    Q = 0.002*[(dt^5)/20, (dt^4)/8, (dt^3)/6; (dt^4)/8, (dt^3)/3, (dt^2)/2; (dt^3)/6, (dt^2)/2, dt];%Dynamic process noise covariance
     A = [1 dt 0.5*dt^2; 
         0 1 dt; 
         0 0 1]; % State transition
     
+    B = [0 0 dt]';
     %Control Input u ~ only thrust curve for these sims
         %Can't just add the thrust needs to be converted to a force
         %If keep adding force it spirals out of control, force as faction
         %of timestep sorts this.
-    if launch_detected && ~motor_burntout
-        u =   dt * motor_thrust(t, "Cesaroni_4025L1355-P") / rocket_mass;    
+
+    if  launch_detected && ~motor_burntout
+        u = 0;%(motor_thrust(t, "Cesaroni_4025L1355-P") / rocket_mass) - 9.81;    
     end
 
     if motor_burntout
-        u = 0;
+        u = -9.81;
     end
 
     % Predict state and estimation error covariance
@@ -109,7 +111,7 @@ while ~landed && k < length(timestamp)
 
     %% Update state machine
     % Check for launch 
-    if ~launch_detected && x_est(3, end) > 10 % Assuming launch when velocity > 10
+    if ~launch_detected && x_est(3, end) > 1 % Assuming launch when velocity > 10
         launch_detected = true;
         launch_time = t;
         disp("launched");
@@ -161,7 +163,7 @@ disp(['Apogee altitude: ', num2str(apogee_altitude), ' meters']);
 
 
 clf;  % Clear  figure
-tiledlayout(1,2);
+tiledlayout(1,3);
 
 % Altitude estimates and measured data
 nexttile;
@@ -196,4 +198,12 @@ nexttile;
 
 scatter(prediction_times(2:end)-burnout_time, predicted_apogee_altitudes(2:end) - apogee_altitude,2, 'b'); 
 ylim([-10 10])
+
+
+nexttile;
+hold on;
+scatter(times(1:1000), (x_est(3, 1:1000) - acc(1:1000,1)'))
+xline(launch_time, 'g:', 'DisplayName', 'Launch Time');
+hold off;
+xline(burnout_time, 'g:', 'DisplayName', 'Motor Burnout Time');
 drawnow;  % Update plot

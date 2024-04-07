@@ -16,7 +16,7 @@ function [alt_lower_bound, alt_mean, alt_upper_bound] = FP_Model(x, P, t, dt)
     Cc = 2 * (x(3) - g) / (rho * (x(2)*x(2)));
 
     %% Generate sample of particles from the posterior mean and covariance of the rocket state
-    numParticles = 1000;  
+    numParticles = 10;  
     
     P = (P + P') / 2;%make sure P is symmetric
 
