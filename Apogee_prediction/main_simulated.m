@@ -1,6 +1,6 @@
 clear all
-data = readtable('data/simulated/Regulus 100.0Hz.csv');
-
+data = readtable('data/simulated/Regulus/Regulus 100.0Hz.csv');
+motor_path = ("data/simulated/Regulus/Cesaroni_4025L1355-P.eng");
 
 timestamp = data.Time;
 alt = data.Z;
@@ -83,7 +83,7 @@ while ~landed && k < length(timestamp)
         %of timestep sorts this.
 
     if  launch_detected && ~motor_burntout
-        u = ((motor_thrust(t, "Cesaroni_4025L1355-P")/rocket_mass) - u);    
+        u = %((motor_thrust(t, motor_path)/rocket_mass) - u);    
     end
 
     if motor_burntout

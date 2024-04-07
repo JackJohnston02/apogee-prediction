@@ -1,7 +1,7 @@
-function [thrust] = motor_thrust(t,motor_name)
+function [thrust] = motor_thrust(t,motor_path)
 
 % Create the file path
-file_path = fullfile('motors/', motor_name +  '.eng');
+file_path = fullfile(motor_path);
 
 % Open the file
 fileID = fopen(file_path, 'r');
