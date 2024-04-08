@@ -12,8 +12,11 @@ acc = data.Az;
 alt = awgn(alt,40,'measured');
 acc = awgn(acc,40,'measured');
 
-alt_std_dev = std(data.Z - alt)
-acc_std_dev = std(data.Az - acc)
+alt_std = 1;
+acc_std = 0.2;
+
+alt = data.Z + alt_std * randn;
+acc = data.Az + acc_std * randn;
 
 
 %% Set up KF
@@ -29,7 +32,7 @@ Q = [1 0 0 ;
      0 1 0; 
      0 0 1]; % Static rocess noise covariance %0.001 * eye(3) 
 
-R = diag([alt_std_dev^2, acc_std_dev^2]); % Measurement noise covariance
+R = diag([alt_std^2, acc_std^2]); % Measurement noise covariance
 
 
 x_est = [];
@@ -137,12 +140,10 @@ while ~landed && ~apogee_detected && k < length(timestamp)
     end
 
     % Predict apogee after 0.1 second after motor burn-out and before apogee is detected
-    if motor_burntout && t >  0.5 + burnout_time && ~apogee_detected
+    if motor_burntout %&& t >  0.5 + burnout_time && ~apogee_detected
     
-        [lower_bound, predicted_apogee_altitude, upper_bound] =  FP_Model(x, P, t, dt);
+        [predicted_apogee_altitude] =  FP_Model(x, P, t, dt);
         predicted_apogee_altitudes = [predicted_apogee_altitudes, predicted_apogee_altitude];
-        lower_bounds = [lower_bounds, lower_bound];
-        upper_bounds = [upper_bounds, upper_bound];
 
         prediction_times = [prediction_times, t];
     end
@@ -190,9 +191,7 @@ hold on;
 plot(times(1:k), x_est(1, 1:k), 'b');
 
 % Plot lower, mean, and upper of apogee predictions
-scatter(prediction_times, lower_bounds, 2, 'r'); 
-scatter(prediction_times, predicted_apogee_altitudes, 3, 'g'); 
-scatter(prediction_times, upper_bounds, 2, 'b'); 
+scatter(prediction_times, predicted_apogee_altitudes, 3, 'b'); 
 
 title('Altitude Estimates and Measured Data');
 xlabel('Time (s)');
