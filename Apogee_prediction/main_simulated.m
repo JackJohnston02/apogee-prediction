@@ -8,10 +8,13 @@ alt = data.Z;
 vel = data.VZ;
 acc = data.Az;
 
-
 %% Add noise to data
-%alt = awgn(alt,20,'measured');
-%acc = awgn(acc,20,'measured');
+alt = awgn(alt,40,'measured');
+acc = awgn(acc,40,'measured');
+
+alt_std_dev = std(data.Z - alt)
+acc_std_dev = std(data.Az - acc)
+
 
 %% Set up KF
 x = [alt(1); 0; 0]; % [altitude; velocity; acceleration]
@@ -26,9 +29,8 @@ Q = [1 0 0 ;
      0 1 0; 
      0 0 1]; % Static rocess noise covariance %0.001 * eye(3) 
 
-R = 0.1*diag([1, 1]); % Measurement noise covariance
+R = diag([alt_std_dev^2, acc_std_dev^2]); % Measurement noise covariance
 
-rocket_mass = 9.462;
 
 x_est = [];
 x_est(:, 1) = x;
@@ -77,12 +79,12 @@ while ~landed && ~apogee_detected && k < length(timestamp)
     times  = [times, t];
     
 
-    Q = 0.01*[(dt^5)/20, (dt^4)/8, (dt^3)/6; (dt^4)/8, (dt^3)/3, (dt^2)/2; (dt^3)/6, (dt^2)/2, dt];%Dynamic process noise covariance
+    Q = [(dt^5)/20, (dt^4)/8, (dt^3)/6; (dt^4)/8, (dt^3)/3, (dt^2)/2; (dt^3)/6, (dt^2)/2, dt];%Dynamic process noise covariance
     A = [1 dt 0.5*dt^2; 
         0 1 dt; 
         0 0 1]; % State transition
     
-    B = [0 dt 0]';
+    B = [0 0 dt]';
     %Control Input u ~ only thrust curve for these sims
         %Can't just add the thrust needs to be converted to a force
         %If keep adding force it spirals out of control, force as faction
@@ -91,7 +93,7 @@ while ~landed && ~apogee_detected && k < length(timestamp)
     if  launch_detected && ~motor_burntout
         thrust = get_thrust(t - launch_time, motor_path);
         mass = get_mass(t - launch_time, rocket_path);
-        u = 0*thrust/mass;    
+        u = (thrust/mass) - u;    
     end
 
     if motor_burntout
@@ -135,7 +137,7 @@ while ~landed && ~apogee_detected && k < length(timestamp)
     end
 
     % Predict apogee after 0.1 second after motor burn-out and before apogee is detected
-    if motor_burntout && t >  0.1 + burnout_time && ~apogee_detected
+    if motor_burntout && t >  0.5 + burnout_time && ~apogee_detected
     
         [lower_bound, predicted_apogee_altitude, upper_bound] =  FP_Model(x, P, t, dt);
         predicted_apogee_altitudes = [predicted_apogee_altitudes, predicted_apogee_altitude];
@@ -197,7 +199,7 @@ xlabel('Time (s)');
 ylabel('Altitude (m)');
 legend('Measured Altitude', 'Estimated Altitude', 'Propagated Altitude');
 xline(launch_time, 'g:', 'DisplayName', 'Launch Time');
-xline(burnout_time, 'g:', 'DisplayName', 'Motor Burnout Time');
+xline(burnout_time, 'r:', 'DisplayName', 'Motor Burnout Time');
 xline(apogee_time, 'g', 'DisplayName', 'Actual Apogee Time');
 yline(apogee_altitude, 'g', 'DisplayName', 'Actual Apogee Altitude');
 hold off;
@@ -218,11 +220,11 @@ tiledlayout(fig2, 3, 2);
 
 % Altitude estimates and measured data
 nexttile;
-plot(timestamp(1:k), alt(1:k), 'y');
+plot(timestamp(1:k), data.Z(1:k), 'y');
 hold on;
 plot(times(1:k), x_est(1, 1:k), 'b');
 
-title('Altitude Estimates and Measured Data');
+title('Altitude Estimates and True Altitude');
 xlabel('Time (s)');
 ylabel('Altitude (m)');
 legend('Measured Altitude', 'Estimated Altitude');
@@ -230,7 +232,7 @@ hold off;
 
 % Altitude residuals
 nexttile;
-scatter(timestamp(1:k), (alt(1:k) - x_est(1, 1:k)'), 'r');
+plot(timestamp(1:k), (data.Z(1:k) - x_est(1, 1:k)'), 'r');
 
 title('Altitude Residuals');
 xlabel('Time (s)');
@@ -243,7 +245,7 @@ plot(timestamp(1:k), vel(1:k), 'y');
 hold on;
 plot(times(1:k), x_est(2, 1:k), 'b');
 
-title('Velocity Estimates and Measured Data');
+title('Velocity Estimates and True Velocity');
 xlabel('Time (s)');
 ylabel('Velocity (m/s)');
 legend('Measured Velocity', 'Estimated Velocity');
@@ -251,7 +253,7 @@ hold off;
 
 % Velocity residuals
 nexttile;
-scatter(times(1:k), (vel(1:k) - x_est(2, 1:k)'), 'r'); % Change plot type to scatter
+plot(times(1:k), (data.VZ(1:k) - x_est(2, 1:k)'), 'r'); % Change plot type to scatter
 
 title('Velocity Residuals');
 xlabel('Time (s)');
@@ -260,11 +262,11 @@ legend('True - estimate');
 
 % Acceleration estimates and measured data
 nexttile;
-plot(timestamp(1:k), acc(1:k), 'y');
+plot(timestamp(1:k), data.Az(1:k), 'y');
 hold on;
 plot(times(1:k), x_est(3, 1:k), 'b');
 
-title('Acceleration Estimates and Measured Data');
+title('Acceleration Estimates and True Acceleration');
 xlabel('Time (s)');
 ylabel('Acceleration (m/s^2)');
 legend('Measured Acceleration', 'Estimated Acceleration');
@@ -272,10 +274,11 @@ hold off;
 
 % Acceleration residuals
 nexttile;
-scatter(times(1:k), (acc(1:k) - x_est(3, 1:k)'), 'r'); % Change plot type to scatter
+plot(times(1:k), (data.Az(1:k) - x_est(3, 1:k)'), 'r'); % Change plot type to scatter
 
 title('Acceleration Residuals');
 xlabel('Time (s)');
 ylabel('Acceleration (m/s^2)');
 legend('True - estimate');
+
 
