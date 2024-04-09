@@ -7,20 +7,15 @@ thrust_function = create_thrust_function(motor_path);
 mass_function = create_mass_function(rocket_path);
 
 timestamp = data.Time;
-alt = data.Z;
 vel = data.VZ;
-acc = data.Az;
 
-%% Add noise to data
-alt = awgn(alt,40,'measured');
-acc = awgn(acc,40,'measured');
+alt_std = 3;
+acc_std = 0.5;
 
-alt_std = 1;
-acc_std = 0.2;
-
-alt = data.Z + alt_std * randn;
-acc = data.Az + acc_std * randn;
-
+for i = 1:length(data.Z)
+    alt(i) = data.Z(i) + alt_std * randn;
+    acc(i) = data.Az(i) + acc_std * randn;
+end
 
 %% Set up KF
 x = [alt(1); 0; 0]; % [altitude; velocity; acceleration]
@@ -85,7 +80,7 @@ while ~landed && ~apogee_detected && k < length(timestamp)
     times  = [times, t];
     
 
-    Q = 100*[(dt^5)/20, (dt^4)/8, (dt^3)/6; (dt^4)/8, (dt^3)/3, (dt^2)/2; (dt^3)/6, (dt^2)/2, dt];%Dynamic process noise covariance
+    Q = 1*[(dt^5)/20, (dt^4)/8, (dt^3)/6; (dt^4)/8, (dt^3)/3, (dt^2)/2; (dt^3)/6, (dt^2)/2, dt];%Dynamic process noise covariance
     A = [1 dt 0.5*dt^2; 
         0 1 dt; 
         0 0 1]; % State transition
@@ -96,11 +91,11 @@ while ~landed && ~apogee_detected && k < length(timestamp)
         %If keep adding force it spirals out of control, force as faction
         %of timestep sorts this.
 
-    if  launch_detected && ~motor_burntout
+    if  launch_detected %&& ~motor_burntout
         time_burning = t - launch_time;
         thrust = thrust_function(time_burning);
         mass = mass_function(time_burning);
-        u = (thrust/mass) - u;    
+        u = (thrust/mass) - u;
     end
     
 
@@ -140,7 +135,7 @@ while ~landed && ~apogee_detected && k < length(timestamp)
         % Predict apogee after 0.1 second after motor burn-out and before apogee is detected
     
         fpcount = fpcount + 1;
-   if motor_burntout && fpcount > 100 %&& t >  0.5 + burnout_time && ~apogee_detected
+   if motor_burntout && fpcount > 1 %&& t >  0.5 + burnout_time && ~apogee_detected
         
         [predicted_apogee_altitude] =  FP_Model(x, P, t, dt);
         predicted_apogee_altitudes = [predicted_apogee_altitudes, predicted_apogee_altitude];
@@ -215,14 +210,14 @@ hold off;
 nexttile;
 hold on;
 scatter(prediction_times, predicted_apogee_altitudes - apogee_altitude, 3, 'b'); 
-title('Altitude Estimates and Measured Data');
+title('Apogee Predictions and True Apogee');
 xlabel('Time (s)');
 ylabel('Altitude (m)');
 xline(launch_time, 'g:', 'DisplayName', 'Launch Time');
 xline(burnout_time, 'r:', 'DisplayName', 'Motor Burnout Time');
 xline(apogee_time, 'g', 'DisplayName', 'Actual Apogee Time');
 yline(0, 'g', 'DisplayName', 'Actual Apogee Altitude');
-ylim([-50,50]);
+ylim([-100,100]);
 hold off;
 
 % Check if the second figure exists, if not, create it
@@ -241,14 +236,14 @@ tiledlayout(fig2, 3, 2);
 
 % Altitude estimates and measured data
 nexttile;
-plot(timestamp(1:k), data.Z(1:k), 'y');
+plot(timestamp(1:k), data.Z(1:k), 'r');
 hold on;
 plot(times(1:k), x_est(1, 1:k), 'b');
 
 title('Altitude Estimates and True Altitude');
 xlabel('Time (s)');
 ylabel('Altitude (m)');
-legend('Measured Altitude', 'Estimated Altitude');
+legend('True Altitude', 'Estimated Altitude');
 hold off;
 
 % Altitude residuals
@@ -262,14 +257,14 @@ legend('True - estimate');
 
 % Velocity estimates and measured data
 nexttile;
-plot(timestamp(1:k), vel(1:k), 'y');
+plot(timestamp(1:k), vel(1:k), 'r');
 hold on;
 plot(times(1:k), x_est(2, 1:k), 'b');
 
 title('Velocity Estimates and True Velocity');
 xlabel('Time (s)');
 ylabel('Velocity (m/s)');
-legend('Measured Velocity', 'Estimated Velocity');
+legend('True Velocity', 'Estimated Velocity');
 hold off;
 
 % Velocity residuals
@@ -283,14 +278,14 @@ legend('True - estimate');
 
 % Acceleration estimates and measured data
 nexttile;
-plot(timestamp(1:k), data.Az(1:k), 'y');
+plot(timestamp(1:k), data.Az(1:k), 'r');
 hold on;
 plot(times(1:k), x_est(3, 1:k), 'b');
 
 title('Acceleration Estimates and True Acceleration');
 xlabel('Time (s)');
 ylabel('Acceleration (m/s^2)');
-legend('Measured Acceleration', 'Estimated Acceleration');
+legend('True Acceleration', 'Estimated Acceleration');
 hold off;
 
 % Acceleration residuals
@@ -302,4 +297,37 @@ xlabel('Time (s)');
 ylabel('Acceleration (m/s^2)');
 legend('True - estimate');
 
+
+% Check if the second figure exists, if not, create it
+fig3 = findobj('Name', 'Figure 3');
+if isempty(fig3)
+    fig3 = figure('Name', 'Figure 3');
+else
+    figure(fig3); % Bring existing figure to front
+end
+
+%% Figure 3
+clf(fig3);
+
+tiledlayout(fig3, 1, 2);
+
+% Altitude measured data
+nexttile;
+hold on;
+plot(timestamp(1:k), alt(1:k), 'r');
+
+title('Measured Altitude');
+xlabel('Time (s)');
+ylabel('Altitude (m)');
+hold off;
+
+% Acceleration measured data
+nexttile;
+hold on;
+plot(timestamp(1:k), acc(1:k), 'r');
+
+title('Measured Acceleration');
+xlabel('Time (s)');
+ylabel('Altitude (m)');
+hold off;
 
