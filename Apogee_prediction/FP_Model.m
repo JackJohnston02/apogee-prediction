@@ -16,7 +16,7 @@ function [alt_lower_bound, alt_mean, alt_upper_bound] = FP_Model(x, P, t, dt)
     Cc = 2 * (x(3) - g) / (rho * (x(2)*x(2)));
 
     %% Generate sample of particles from the posterior mean and covariance of the rocket state
-    numParticles = 10;  
+    numParticles = 10000;  
     
     P = (P + P') / 2;%make sure P is symmetric
 
@@ -27,7 +27,7 @@ function [alt_lower_bound, alt_mean, alt_upper_bound] = FP_Model(x, P, t, dt)
 
     %% Perform prediction until the velocity prediction is zero
     for i = 1:numParticles
-        while particles(i,2) > 0 
+        while particles(i,2) > 0 && particles(i,1) > 0 && particles(i,1) < 10000
             % Propagate each particle through the prediction algorithm
             rho =  1.225 * (1 - (0.0065 * particles(i,1)) / 288.15)^(9.80665 / (287.05 * 0.0065));
             particles(i,3) = -9.81 + (0.5 * Cc * rho * particles(i,2) * particles(i,2));

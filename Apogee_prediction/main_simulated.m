@@ -3,6 +3,9 @@ data = readtable('data/simulated/Regulus/Regulus 100.0Hz.csv');
 motor_path = ("data/simulated/Regulus/Cesaroni_4025L1355-P.eng");
 rocket_path = ("data/simulated/Regulus/Rocket.txt");
 
+thrust_function = create_thrust_function(motor_path);
+mass_function = create_mass_function(rocket_path);
+
 timestamp = data.Time;
 alt = data.Z;
 vel = data.VZ;
@@ -74,15 +77,15 @@ t = 0;
 times = [t];
 dt = 0.01;
 
+fpcount = 0;
 
 %% Loop
-
 while ~landed && ~apogee_detected && k < length(timestamp)
     t = t + dt;
     times  = [times, t];
     
 
-    Q = [(dt^5)/20, (dt^4)/8, (dt^3)/6; (dt^4)/8, (dt^3)/3, (dt^2)/2; (dt^3)/6, (dt^2)/2, dt];%Dynamic process noise covariance
+    Q = 100*[(dt^5)/20, (dt^4)/8, (dt^3)/6; (dt^4)/8, (dt^3)/3, (dt^2)/2; (dt^3)/6, (dt^2)/2, dt];%Dynamic process noise covariance
     A = [1 dt 0.5*dt^2; 
         0 1 dt; 
         0 0 1]; % State transition
@@ -94,10 +97,13 @@ while ~landed && ~apogee_detected && k < length(timestamp)
         %of timestep sorts this.
 
     if  launch_detected && ~motor_burntout
-        thrust = get_thrust(t - launch_time, motor_path);
-        mass = get_mass(t - launch_time, rocket_path);
+        time_burning = t - launch_time;
+        thrust = thrust_function(time_burning);
+        mass = mass_function(time_burning);
         u = (thrust/mass) - u;    
     end
+    
+
 
     if motor_burntout
         u = 0;
@@ -131,21 +137,23 @@ while ~landed && ~apogee_detected && k < length(timestamp)
         launch_time = t;
         disp("Launched at t=" + launch_time);
     end
+        % Predict apogee after 0.1 second after motor burn-out and before apogee is detected
     
+        fpcount = fpcount + 1;
+   if motor_burntout && fpcount > 100 %&& t >  0.5 + burnout_time && ~apogee_detected
+        
+        [predicted_apogee_altitude] =  FP_Model(x, P, t, dt);
+        predicted_apogee_altitudes = [predicted_apogee_altitudes, predicted_apogee_altitude];
+
+        prediction_times = [prediction_times, t];
+        fpcount = 0;
+    end
+
     % Check motor burnout
     if launch_detected && ~motor_burntout && x_est(3, end) < 0 % Assuming motor burnout when acceleration < 0
         motor_burntout = true;
         burnout_time = t;
         disp("Burnout at t=" + burnout_time);
-    end
-
-    % Predict apogee after 0.1 second after motor burn-out and before apogee is detected
-    if motor_burntout %&& t >  0.5 + burnout_time && ~apogee_detected
-    
-        [predicted_apogee_altitude] =  FP_Model(x, P, t, dt);
-        predicted_apogee_altitudes = [predicted_apogee_altitudes, predicted_apogee_altitude];
-
-        prediction_times = [prediction_times, t];
     end
 
     % Check apogee
@@ -182,7 +190,7 @@ end
 clf(fig1);
 
 % Create tiled layout in figure 1
-tiledlayout(fig1, 1, 1);
+tiledlayout(fig1, 2, 1);
 
 % Altitude estimates and measured data
 nexttile;
@@ -201,6 +209,20 @@ xline(launch_time, 'g:', 'DisplayName', 'Launch Time');
 xline(burnout_time, 'r:', 'DisplayName', 'Motor Burnout Time');
 xline(apogee_time, 'g', 'DisplayName', 'Actual Apogee Time');
 yline(apogee_altitude, 'g', 'DisplayName', 'Actual Apogee Altitude');
+hold off;
+
+
+nexttile;
+hold on;
+scatter(prediction_times, predicted_apogee_altitudes - apogee_altitude, 3, 'b'); 
+title('Altitude Estimates and Measured Data');
+xlabel('Time (s)');
+ylabel('Altitude (m)');
+xline(launch_time, 'g:', 'DisplayName', 'Launch Time');
+xline(burnout_time, 'r:', 'DisplayName', 'Motor Burnout Time');
+xline(apogee_time, 'g', 'DisplayName', 'Actual Apogee Time');
+yline(0, 'g', 'DisplayName', 'Actual Apogee Altitude');
+ylim([-50,50]);
 hold off;
 
 % Check if the second figure exists, if not, create it
