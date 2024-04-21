@@ -57,12 +57,9 @@ predicted_apogee_time = 0;
 predicted_apogee_altitude = 0;
 predicted_apogee_times = [0];
 predicted_apogee_altitudes = [0];
+predicted_apogee_sigmas = [0];
 
 
-lower_bound = 0;
-upper_bound = 0;
-lower_bounds = [0];
-upper_bounds = [0];
 
 prediction_times = [0];
 
@@ -76,7 +73,7 @@ fpcount = 0;
 
 %% Loop
 while ~landed && ~apogee_detected && k < length(timestamp)
-    t = t + dt;
+    t = t + dt
     times  = [times, t];
     
 
@@ -137,7 +134,8 @@ while ~landed && ~apogee_detected && k < length(timestamp)
         fpcount = fpcount + 1;
    if motor_burntout && fpcount > 1 %&& t >  0.5 + burnout_time && ~apogee_detected
         
-        [predicted_apogee_altitude] =  FP_Model(x, P, t, dt);
+        [predicted_apogee_altitude, predicted_apogee_sigma] =  FP_Model(x, P, t, dt);
+        predicted_apogee_sigmas = [predicted_apogee_sigmas, predicted_apogee_sigma];
         predicted_apogee_altitudes = [predicted_apogee_altitudes, predicted_apogee_altitude];
 
         prediction_times = [prediction_times, t];
@@ -195,6 +193,8 @@ plot(times(1:k), x_est(1, 1:k), 'b');
 
 % Plot lower, mean, and upper of apogee predictions
 scatter(prediction_times, predicted_apogee_altitudes, 3, 'b'); 
+scatter(prediction_times, predicted_apogee_altitudes + predicted_apogee_sigmas * 3, 3, 'r');
+scatter(prediction_times, predicted_apogee_altitudes + predicted_apogee_sigmas * -3, 3, 'r'); 
 
 title('Altitude Estimates and Measured Data');
 xlabel('Time (s)');
@@ -209,7 +209,9 @@ hold off;
 
 nexttile;
 hold on;
-scatter(prediction_times, predicted_apogee_altitudes - apogee_altitude, 3, 'b'); 
+plot(prediction_times, predicted_apogee_altitudes - apogee_altitude, 'b'); 
+plot(prediction_times, predicted_apogee_altitudes + predicted_apogee_sigmas * 3 - apogee_altitude, 'r');
+plot(prediction_times, predicted_apogee_altitudes + predicted_apogee_sigmas * -3 - apogee_altitude, 'r'); 
 title('Apogee Predictions and True Apogee');
 xlabel('Time (s)');
 ylabel('Altitude (m)');
@@ -217,7 +219,7 @@ xline(launch_time, 'g:', 'DisplayName', 'Launch Time');
 xline(burnout_time, 'r:', 'DisplayName', 'Motor Burnout Time');
 xline(apogee_time, 'g', 'DisplayName', 'Actual Apogee Time');
 yline(0, 'g', 'DisplayName', 'Actual Apogee Altitude');
-ylim([-100,100]);
+ylim([-50,50]);
 hold off;
 
 % Check if the second figure exists, if not, create it

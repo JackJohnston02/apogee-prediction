@@ -1,4 +1,4 @@
-function [alt_lower_bound, alt_mean, alt_upper_bound] = FP_Model(x, P, t, dt)
+function [alt_mean, alt_sigma] = FP_Model(x, P, t, dt)
 %FORWARDPROPAGATION Summary of this function goes here
 %   Detailed explanation goes here
     %Calcualte Cd
@@ -11,22 +11,24 @@ function [alt_lower_bound, alt_mean, alt_upper_bound] = FP_Model(x, P, t, dt)
     
     g = -9.80665;
 
-    rho = 1.225 * (1 - (0.0065 * x(1)) / 288.15)^(-g / (287.05 * 0.0065));%calculate the air density
+    %calculate the air density
     
-    Cc = 2 * (x(3) - g) / (rho * (x(2)*x(2)));
-
     %% Generate sample of particles from the posterior mean and covariance of the rocket state
-    numParticles = 2;  
+    numParticles = 1000;  
     
     P = (P + P') / 2;%make sure P is symmetric
-
-
+    
+    %For uniform Cc and rho
+    %Cc = 2 * (x(3) - g) / (rho * (x(2)*x(2)));
+    %rho = 1.225 * (1 - (0.0065 * x(1)) / 288.15)^(-g / (287.05 * 0.0065));
     particles = mvnrnd(x, P, numParticles);%Not sure if this is the correct function?
 
 
 
     %% Perform prediction until the velocity prediction is zero
     for i = 1:numParticles
+        rho =  1.225 * (1 - (0.0065 * particles(i,1)) / 288.15)^(9.80665 / (287.05 * 0.0065));
+        Cc = 2 * (particles(i,3) - g) / (rho * (particles(i,2)*particles(i,2)));
         while particles(i,2) > 0 && particles(i,1) > 0 && particles(i,1) < 5000
             % Propagate each particle through the prediction algorithm
             rho =  1.225 * (1 - (0.0065 * particles(i,1)) / 288.15)^(9.80665 / (287.05 * 0.0065));
@@ -51,11 +53,8 @@ function [alt_lower_bound, alt_mean, alt_upper_bound] = FP_Model(x, P, t, dt)
     %% Calculate 3sigma bound from the covariance matrix (upper and lower limits)
     sigma_particles = sqrt([covariance_particle(1,1), covariance_particle(2,2), covariance_particle(3,3)]); %find SD, only need diagonal elemtns
 
-    lower_bound = mean_particles - 3*sigma_particles;
-    upper_bound = mean_particles + 3*sigma_particles;
-    
-    alt_lower_bound = lower_bound(1);
+    alt_sigma = sigma_particles(1);
     alt_mean = mean_particles(1);
-    alt_upper_bound = upper_bound(1);
+    
 end
 
