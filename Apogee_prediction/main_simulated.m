@@ -209,9 +209,10 @@ hold off;
 
 nexttile;
 hold on;
-plot(prediction_times, predicted_apogee_altitudes - apogee_altitude, 'b'); 
-plot(prediction_times, predicted_apogee_altitudes + predicted_apogee_sigmas * 3 - apogee_altitude, 'r');
-plot(prediction_times, predicted_apogee_altitudes + predicted_apogee_sigmas * -3 - apogee_altitude, 'r'); 
+scatter(prediction_times, predicted_apogee_altitudes - apogee_altitude, 'b'); 
+scatter(prediction_times, predicted_apogee_altitudes + predicted_apogee_sigmas * 3 - apogee_altitude, 'r');
+scatter(prediction_times, predicted_apogee_altitudes + predicted_apogee_sigmas * -3 - apogee_altitude, 'r'); 
+
 title('Apogee Predictions and True Apogee');
 xlabel('Time (s)');
 ylabel('Altitude (m)');
@@ -219,7 +220,7 @@ xline(launch_time, 'g:', 'DisplayName', 'Launch Time');
 xline(burnout_time, 'r:', 'DisplayName', 'Motor Burnout Time');
 xline(apogee_time, 'g', 'DisplayName', 'Actual Apogee Time');
 yline(0, 'g', 'DisplayName', 'Actual Apogee Altitude');
-ylim([-50,50]);
+ylim([-25,25]);
 hold off;
 
 % Check if the second figure exists, if not, create it
