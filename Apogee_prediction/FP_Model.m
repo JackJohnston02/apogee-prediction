@@ -14,15 +14,21 @@ function [alt_mean, alt_sigma] = FP_Model(x, P, t, dt)
     %calculate the air density
     
     %% Generate sample of particles from the posterior mean and covariance of the rocket state
-    numParticles = 100;  
+    numParticles = 1;  
     
     P = (P + P') / 2;%make sure P is symmetric
     
     %For uniform Cc and rho
     %Cc = 2 * (x(3) - g) / (rho * (x(2)*x(2)));
     %rho = 1.225 * (1 - (0.0065 * x(1)) / 288.15)^(-g / (287.05 * 0.0065));
-    particles = mvnrnd(x, P, numParticles);%Not sure if this is the correct function?
-    T_0 = 283;
+    if numParticles == 1
+        particles(1,:) = x;
+   
+    else
+        particles = mvnrnd(x, P, numParticles);%Not sure if this is the correct function?
+    end
+
+    T_0 = 260;
     L = 0.0065; 
 
     %% Perform prediction until the velocity prediction is zero
@@ -44,7 +50,7 @@ function [alt_mean, alt_sigma] = FP_Model(x, P, t, dt)
 
     %% Form distribution from the propagated particles
     % Calculate Mean (should be equal to single propagated mean
-    mean_particles = mean(particles);
+    mean_particles = mean(particles(:,1));
 
     % Calculate Covariance
     covariance_particle = zeros(3,3);
