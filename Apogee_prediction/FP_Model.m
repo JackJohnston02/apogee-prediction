@@ -14,7 +14,7 @@ function [alt_mean, alt_sigma] = FP_Model(x, P, t, dt)
     %calculate the air density
     
     %% Generate sample of particles from the posterior mean and covariance of the rocket state
-    numParticles = 1;  
+    numParticles = 100;  
     
     P = (P + P') / 2;%make sure P is symmetric
     
@@ -53,16 +53,14 @@ function [alt_mean, alt_sigma] = FP_Model(x, P, t, dt)
     mean_particles = mean(particles(:,1));
 
     % Calculate Covariance
-    covariance_particle = zeros(3,3);
+    covariance_particle = zeros(1,1);
     for i = 1:numParticles
-        covariance_particle = covariance_particle + (particles(i,:)' - mean_particles') * ((particles(i,:)' - mean_particles'))'; 
-        covariance_particle = covariance_particle/numParticles;%Check with Joe if this is correct?
+        covariance_particle = covariance_particle + (particles(i,1)' - mean_particles') * ((particles(i,1)' - mean_particles'))'; 
     end
-    
-    %% Calculate 3sigma bound from the covariance matrix (upper and lower limits)
-    sigma_particles = sqrt([covariance_particle(1,1), covariance_particle(2,2), covariance_particle(3,3)]); %find SD, only need diagonal elemtns
 
-    alt_sigma = sigma_particles(1);
+    covariance_particle = covariance_particle/numParticles;%Check with Joe if this is correct?
+
+    alt_sigma = sqrt(covariance_particle);
     alt_mean = mean_particles(1);
     
 end
