@@ -19,6 +19,7 @@ classdef Kalman_Filter
         I               % nXn Identity Matrix
         settings
         G
+        Ts
     end
     
     methods

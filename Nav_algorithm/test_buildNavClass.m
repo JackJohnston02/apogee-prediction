@@ -15,6 +15,7 @@ sigma.sigma_mag = 1e-3*eye(3);
 
 settingsCA_KF.useGPSAltitude = false;
 settingsMEKF.useAccUpdate = false;
+LLA0 = [55 -3 100];
 
 
-nav = Navigation_Algorithm(xi,Pt,Pa,sigma,Ts,q,settingsCA_KF,settings_MEKF);
+nav = Navigation_Algorithm(xi,Pt,Pa,sigma,Ts,q,settingsCA_KF,settings_MEKF,LLA0);
