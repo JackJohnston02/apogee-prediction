@@ -9,10 +9,14 @@ function [Rocket] = dynamics_update(Rocket, t, dt)
 %% Code
     g = -9.81 * (6371e3/(6371e3 + Rocket.x(end,1)))^2;
     
-    F_thrust = Rocket.thrust(t);
+
+%% Get body Cd
     F_drag_body = -0.001 * Rocket.x(end,2)^2;
+    
     F_drag_airbrakes = 0;
 
+    
+    F_thrust = Rocket.thrust(t);
     %Calculate total force acting on the rocket
     F = F_thrust + F_drag_body + F_drag_airbrakes;
 

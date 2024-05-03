@@ -70,6 +70,9 @@ Rocket.thrust = @(t) (t >= 0 & t < 0.1) .* (t * (thrust_data(1,2) / 0.1)) + ...
 
 Rocket.mass = @(t) max(mass_wet - (mass_wet - mass_dry) * min(t, Rocket.burntime) / Rocket.burntime, mass_dry);
 
+
+%% Import drag coeff data(body(on and off), airbrakes)
+
 %% Define initial conditions
 t = [0];
 Rocket.x(1,1) = altitude_launch;
