@@ -16,18 +16,23 @@ function [Rocket] = dynamics_update(Rocket, t, dt)
 
 
 
-%% Get body Cd
+%% Get body drag
 
     if Rocket.state == "burning"
         Cd = Rocket.dragcoef_off(Ma);
     else
         Cd = Rocket.dragcoef_on(Ma);
     end
-    
     F_drag_body = -0.5 * Cd * Rocket.area * rho * Rocket.x(end,2)^2;
 
+%% Get airbrake drag 
 
-    F_drag_airbrakes = Rocket.Airbrakes.dragforce(Ma);
+    %cd_times_A = myAirbrake.getCdTimesA(mach_no);
+    if Rocket.state == "burntout"
+        F_drag_airbrakes = -400;
+    else
+        F_drag_airbrakes = 0;
+    end
 
     
     F_thrust = Rocket.thrust(t);

@@ -10,4 +10,5 @@ motor_path = ("Motors/Cesaroni_4025L1355-P.eng");%.eng file containing the thrus
 Cd_mon_path = ("Rockets/Regulus/Regulus CD power on.csv");%csv file containing the Cd curve whilst motor is burning
 Cd_moff_path = ("Rockets/Regulus/Regulus CD power off.csv");%csv file containing the Cd curve whilst motor is not burning
 
-Cd_airbrakes = ("");%csv file containing a look up table of Cd vs mach no. vs deployment angle
+Cc_airbrakes = ("");%csv file containing a look up table of Cd * A vs mach no. vs deployment angle
+

@@ -15,7 +15,7 @@
 
 %Add airbrakes to dynamics update, just add struct for airbrakes, Cd
 %function and deployment variable
-%Include 2d function for airbrakes Cd, mach no and deployment angle
+%Include 2d function for airbrakes Cd*A, mach no and deployment angle
 
 % Add controller function, inputs should be all states, output should be
 % motor velocity
@@ -33,11 +33,15 @@ rocket_file_name = "Regulus";%File containing rocket data
 dt = 0.01; %Simulation timestep
 
 
+
 %% Import Data
 %Rocket data
 run(rocket_file_name);
 fprintf(rocket_file_name + " data used for simulation")
 
+%Airbrake data
+
+%Airbrake1 = Airbrake(0, 90, cc_data); %Airbrake Cd*A, as function of Ma and deployment angle
 
 %Motor data
 file_path = fullfile(motor_path);
@@ -71,7 +75,7 @@ Rocket.thrust = @(t) (t >= 0 & t < 0.1) .* (t * (thrust_data(1,2) / 0.1)) + ...
 Rocket.mass = @(t) max(mass_wet - (mass_wet - mass_dry) * min(t, Rocket.burntime) / Rocket.burntime, mass_dry);
 
 
-%% Import drag coeff data(body(on and off), airbrakes)
+%% Import drag coeff data for body(on and off)
 
 % Drag Coefficient whilst motor is burning
 % Read the CSV file
@@ -122,14 +126,13 @@ Rocket.x(1,3) = -9.81;
 Rocket.state = "pad";
 
 
+
 %% Main Loop
 while Rocket.state ~= "landed"  && t(end) < 100
     t(end+1) = t(end) + dt;
     
     Rocket.state = state_update(Rocket);
     Rocket = dynamics_update(Rocket, t(end), dt);
-    Rocket = model_update(Rocket, t(end), dt);
-
 end
 
 %Comment out if dont want forced graphs
