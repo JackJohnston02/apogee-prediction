@@ -1,10 +1,10 @@
 classdef Airbrake
     properties
-        % Define the properties of the airbrake here
-        % For example:
         position
         maxPosition
         minPosition
+        Cd  % Drag coefficient
+        A   % Reference area
     end
     
     methods
@@ -24,6 +24,13 @@ classdef Airbrake
             end
         end
         
-        % Add more methods as needed for your simulation
+        % Method to calculate Cd * A based on the position
+        function cd_times_A = getCdTimesA(obj)
+            % Assuming a linear relationship between position and Cd
+            cd_at_position = obj.Cd * (obj.position / obj.maxPosition);
+            
+            % Calculate Cd * A
+            cd_times_A = cd_at_position * obj.A;
+        end
     end
 end

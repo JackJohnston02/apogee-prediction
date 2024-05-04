@@ -28,11 +28,7 @@ function [Rocket] = dynamics_update(Rocket, t, dt)
 %% Get airbrake drag 
 
     %cd_times_A = myAirbrake.getCdTimesA(mach_no);
-    if Rocket.state == "burntout"
-        F_drag_airbrakes = -400;
-    else
-        F_drag_airbrakes = 0;
-    end
+    F_drag_airbrakes = 0;
 
     
     F_thrust = Rocket.thrust(t);

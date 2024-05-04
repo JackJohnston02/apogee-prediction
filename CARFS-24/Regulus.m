@@ -11,4 +11,5 @@ Cd_mon_path = ("Rockets/Regulus/Regulus CD power on.csv");%csv file containing t
 Cd_moff_path = ("Rockets/Regulus/Regulus CD power off.csv");%csv file containing the Cd curve whilst motor is not burning
 
 Cc_airbrakes = ("");%csv file containing a look up table of Cd * A vs mach no. vs deployment angle
-
+maxPosition = 90;
+minPosition = 0;

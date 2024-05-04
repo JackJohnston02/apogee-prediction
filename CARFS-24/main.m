@@ -31,7 +31,7 @@ clear
 %% Simulation Settings
 rocket_file_name = "Regulus";%File containing rocket data
 dt = 0.01; %Simulation timestep
-
+targetApogee = 3000;
 
 
 %% Import Data
@@ -124,15 +124,18 @@ Rocket.x(1,2) = 0;
 Rocket.x(1,3) = -9.81;
 
 Rocket.state = "pad";
-
-
-
+airbrake = Airbrake(maxPosition, minPosition);
 %% Main Loop
 while Rocket.state ~= "landed"  && t(end) < 100
     t(end+1) = t(end) + dt;
     
     Rocket.state = state_update(Rocket);
     Rocket = dynamics_update(Rocket, t(end), dt);
+    
+    % Add controller, containing FP model and use that to update the
+    % airbrake position
+    
+
 end
 
 %Comment out if dont want forced graphs
