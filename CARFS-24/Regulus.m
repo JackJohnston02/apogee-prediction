@@ -1,5 +1,7 @@
-mass_dry = 10; %kg
-mass_wet = 15; %kg
+mass_dry = 7.67; %kg
+mass_wet = 9.462; %kg
+Rocket.area = 0.0075;%m^2
+
 
 altitude_launch = 100;%m
 angle_launchrail = 1;%m

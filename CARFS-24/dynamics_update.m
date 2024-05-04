@@ -7,19 +7,34 @@ function [Rocket] = dynamics_update(Rocket, t, dt)
     % add drag force, probably implment CARFS seperate function?
 
 %% Code
-    g = -9.81 * (6371e3/(6371e3 + Rocket.x(end,1)))^2;
+    g = -9.81 * (6371e3/(6371e3 + Rocket.x(end,1)))^2; % Gravity as function of altitude
+    [T, a, P, rho] = atmosisa(Rocket.x(end,1));
     
+    %Calculate Mach Number
+    c = sqrt(1.4 * 287 * T);
+    Ma = Rocket.x(end,2)/c; %Mach no.
+
+
 
 %% Get body Cd
-    F_drag_body = -0.001 * Rocket.x(end,2)^2;
+
+    if Rocket.state == "burning"
+        Cd = Rocket.dragcoef_off(Ma);
+    else
+        Cd = Rocket.dragcoef_on(Ma);
+    end
     
-    F_drag_airbrakes = 0;
+    F_drag_body = -0.5 * Cd * Rocket.area * rho * Rocket.x(end,2)^2;
+
+
+    F_drag_airbrakes = Rocket.Airbrakes.dragforce(Ma);
 
     
     F_thrust = Rocket.thrust(t);
-    %Calculate total force acting on the rocket
+    %Calculate net force acting on the rocket
     F = F_thrust + F_drag_body + F_drag_airbrakes;
 
+    %Calculate net acceleration
     u = g + F/Rocket.mass(t);
 
     s = Rocket.x(end,1) + Rocket.x(end,2) * dt + 0.5 * Rocket.x(end,3)* dt^2; %dS =  vt + 1/2 at^2

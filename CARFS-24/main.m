@@ -73,6 +73,46 @@ Rocket.mass = @(t) max(mass_wet - (mass_wet - mass_dry) * min(t, Rocket.burntime
 
 %% Import drag coeff data(body(on and off), airbrakes)
 
+% Drag Coefficient whilst motor is burning
+% Read the CSV file
+T = readtable(Cd_mon_path);
+
+% Convert the table to a matrix
+M = table2array(T);
+
+% Extract Mach number and Cd data
+mach_no = M(:, 1);
+cd = M(:, 2);
+
+% Find unique Mach numbers and get the corresponding indices
+[mach_no_unique, idx] = unique(mach_no);
+
+% Use the indices to get the corresponding unique Cd values
+cd_unique = cd(idx);
+
+% Create an interpolation function with the unique values
+Rocket.dragcoef_on = @(x) interp1(mach_no_unique, cd_unique, x, 'linear', 'extrap');
+
+% Drag Coefficient whilst motor is not burning
+% Read the CSV file
+T = readtable(Cd_moff_path);
+
+% Convert the table to a matrix
+M = table2array(T);
+
+% Extract Mach number and Cd data
+mach_no = M(:, 1);
+cd = M(:, 2);
+
+% Find unique Mach numbers and get the corresponding indices
+[mach_no_unique, idx] = unique(mach_no);
+
+% Use the indices to get the corresponding unique Cd values
+cd_unique = cd(idx);
+
+% Create an interpolation function with the unique values
+Rocket.dragcoef_off = @(x) interp1(mach_no_unique, cd_unique, x, 'linear', 'extrap');
+
 %% Define initial conditions
 t = [0];
 Rocket.x(1,1) = altitude_launch;
@@ -88,6 +128,7 @@ while Rocket.state ~= "landed"  && t(end) < 100
     
     Rocket.state = state_update(Rocket);
     Rocket = dynamics_update(Rocket, t(end), dt);
+    Rocket = model_update(Rocket, t(end), dt);
 
 end
 

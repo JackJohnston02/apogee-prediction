@@ -10,11 +10,11 @@ function [state] = state_update(Rocket)
 
     % Detect launch and switch  
     if Rocket.state == "pad" && Rocket.x(end,3) > 10
-        state = "launched";
+        state = "burning";
     end
 
     % Detect burnout and switch  
-    if Rocket.state == "launched" && Rocket.x(end,3)< 0 
+    if Rocket.state == "burning" && Rocket.x(end,3)< 0 
         state = "burntout";
     end
 
