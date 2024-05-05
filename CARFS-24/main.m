@@ -34,6 +34,9 @@ dt = 0.01; %Simulation timestep
 targetApogee = 3000;
 
 
+controller = PIDController();
+
+
 %% Import Data
 %Rocket data
 run(rocket_file_name);
@@ -117,6 +120,16 @@ cd_unique = cd(idx);
 % Create an interpolation function with the unique values
 Rocket.dragcoef_off = @(x) interp1(mach_no_unique, cd_unique, x, 'linear', 'extrap');
 
+
+%% Define controller
+% Create a PID controller with Kp, Ki, and Kd
+
+
+% Set the desired apogee
+setpoint = targetApogee;
+
+% Set the process variable to launch altitude
+process_variable = altitude_launch;
 %% Define initial conditions
 t = [0];
 Rocket.x(1,1) = altitude_launch;
@@ -124,18 +137,36 @@ Rocket.x(1,2) = 0;
 Rocket.x(1,3) = -9.81;
 
 Rocket.state = "pad";
-airbrake = Airbrake(maxPosition, minPosition);
+Rocket.airbrake = Airbrake(maxPosition, minPosition);
+airbrake_position_log = [Rocket.airbrake.position];
+ airbrake_velocity_log = [0];
+error_log = [0];
+predicted_apogee = targetApogee;
+t_last = 0
 %% Main Loop
 while Rocket.state ~= "landed"  && t(end) < 100
     t(end+1) = t(end) + dt;
     
     Rocket.state = state_update(Rocket);
+    Rocket.airbrake = Rocket.airbrake.updatePosition(dt);
     Rocket = dynamics_update(Rocket, t(end), dt);
     
     % Add controller, containing FP model and use that to update the
     % airbrake position
-    
 
+    %During coasting phase
+    if Rocket.state == "burntout" && t(end) > 5 && t_last + 0.1 < t(end)
+        t_last = t(end);
+        % Predict the apogee
+        predicted_apogee = apa(Rocket.x(end,:), 0.01);
+        % Calculate the controller output
+        output = controller.calculate(setpoint, predicted_apogee);
+        % Change airbrake position
+        Rocket.airbrake = Rocket.airbrake.updateVelocity(output);
+    end
+    airbrake_velocity_log = [airbrake_velocity_log, Rocket.airbrake.velocity];
+    airbrake_position_log = [airbrake_position_log,Rocket.airbrake.position];
+    error_log = [error_log, predicted_apogee - targetApogee];
 end
 
 %Comment out if dont want forced graphs

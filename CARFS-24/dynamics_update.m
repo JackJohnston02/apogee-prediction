@@ -27,8 +27,8 @@ function [Rocket] = dynamics_update(Rocket, t, dt)
 
 %% Get airbrake drag 
 
-    %cd_times_A = myAirbrake.getCdTimesA(mach_no);
-    F_drag_airbrakes = 0;
+    cd_times_A = Rocket.airbrake.getCdTimesA(Ma);
+    F_drag_airbrakes = -0.5 * cd_times_A * rho * Rocket.x(end,2)^2;
 
     
     F_thrust = Rocket.thrust(t);

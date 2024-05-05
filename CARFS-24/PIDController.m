@@ -9,21 +9,21 @@ classdef PIDController
     end
     
     methods
-        function obj = PIDController(Kp, Ki, Kd)
-            obj.Kp = Kp;
-            obj.Ki = Ki;
-            obj.Kd = Kd;
+        function obj = PIDController()
+            obj.Kp = 1;
+            obj.Ki = 0;
+            obj.Kd = 0;
             obj.integralTerm = 0;
             obj.lastError = 0;
             obj.setpoint = 0;
         end
         
-        function output = calculate(obj, setpoint, process_variable)
-            error = setpoint - process_variable;
+       function output = calculate(obj, setpoint, process_variable)
+            error = process_variable - setpoint;
             P = obj.Kp * error;
             obj.integralTerm = obj.integralTerm + obj.Ki * error;
             derivative = obj.Kd * (error - obj.lastError);
-            obj.lastError = error;
+            obj.lastError = error; 
             output = P + obj.integralTerm + derivative;
         end
     end
