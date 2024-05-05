@@ -6,8 +6,8 @@ classdef Airbrake
         minPosition
         maxVelocity
         minVelocity
-        Cd = 0.5  % Drag coefficient
-        A = 0.03   % Reference area
+        Cd = 1.8  % Drag coefficient, function of Mach number
+        A = (57 * 10^(-3) * 10*10^(-2))   % Reference area, at max deployment
     end
     
     methods
@@ -52,11 +52,10 @@ classdef Airbrake
         
         % Method to calculate Cd * A based on the position
         function cd_times_A = getCdTimesA(obj, machNumber)
-            % Assuming a linear relationship between position and Cd
-            cd_at_position = obj.Cd * (obj.position / obj.maxPosition);
-            
+            % Calculate effective area from angle and ref A
+            A_effective = obj.A * sin(deg2rad(obj.position));
             % Calculate Cd * A
-            cd_times_A = cd_at_position * obj.A;
+            cd_times_A = obj.Cd * A_effective;
         end
     end
 end

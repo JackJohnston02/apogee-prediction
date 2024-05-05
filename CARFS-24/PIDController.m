@@ -11,7 +11,7 @@ classdef PIDController
     methods
         function obj = PIDController()
             obj.Kp = 3;
-            obj.Ki = 5;
+            obj.Ki = 0;
             obj.Kd = 0;
             obj.integralTerm = 0;
             obj.lastError = 0;

@@ -10,18 +10,8 @@
 
 %% %%%********** Todo *********%%%
 %Include CARFS for supersonic simulations
-%CARFS for density at altitude
-%Include lookup tables for body Cd
 
-%Add airbrakes to dynamics update, just add struct for airbrakes, Cd
-%function and deployment variable
 %Include 2d function for airbrakes Cd*A, mach no and deployment angle
-
-% Add controller function, inputs should be all states, output should be
-% motor velocity
-
-%Add airbrake model, inputs should be motor velocity, output should be
-%deployment angle lag, hard limits go here. 
 
 
 %% %%%*********MAINSCRIPT*********%%%
@@ -142,7 +132,8 @@ airbrake_position_log = [Rocket.airbrake.position];
  airbrake_velocity_log = [0];
 error_log = [0];
 predicted_apogee = targetApogee;
-t_last = 0
+t_last = 0;
+Rocket.F_drag_airbrakes_out = [];
 %% Main Loop
 while Rocket.state ~= "landed"  && t(end) < 100
     t(end+1) = t(end) + dt;

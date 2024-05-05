@@ -11,8 +11,7 @@ function [Rocket] = dynamics_update(Rocket, t, dt)
     [T, a, P, rho] = atmosisa(Rocket.x(end,1));
     
     %Calculate Mach Number
-    c = sqrt(1.4 * 287 * T);
-    Ma = Rocket.x(end,2)/c; %Mach no.
+    Ma = Rocket.x(end,2)/a; %Mach no. vel/speed_of_sound
 
 
 
@@ -29,7 +28,7 @@ function [Rocket] = dynamics_update(Rocket, t, dt)
 
     cd_times_A = Rocket.airbrake.getCdTimesA(Ma);
     F_drag_airbrakes = -0.5 * cd_times_A * rho * Rocket.x(end,2)^2;
-
+    Rocket.F_drag_airbrakes_out = [Rocket.F_drag_airbrakes_out, F_drag_airbrakes];
     
     F_thrust = Rocket.thrust(t);
     %Calculate net force acting on the rocket
