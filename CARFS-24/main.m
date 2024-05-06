@@ -12,7 +12,8 @@
 %Include CARFS for supersonic simulations
 
 %Include 2d function for airbrakes Cd*A, mach no and deployment angle
-
+%Include motor - gearbox - airbrakes into class, input should be PPS
+%control output should be PPS
 
 %% %%%*********MAINSCRIPT*********%%%
 clc
