@@ -15,6 +15,8 @@
 %Include motor - gearbox - airbrakes into class, input should be PPS
 %control output should be PPS
 
+% Add sensors, sampling KF ect.
+
 %% %%%*********MAINSCRIPT*********%%%
 clc
 clear 
