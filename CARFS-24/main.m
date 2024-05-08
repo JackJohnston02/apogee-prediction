@@ -24,7 +24,7 @@ clear
 %% Simulation Settings
 rocket_file_name = "Regulus";%File containing rocket data
 dt = 0.01; %Simulation timestep
-targetApogee = 0;
+targetApogee = 3000;
 
 
 controller = PIDController();
@@ -138,7 +138,7 @@ predicted_apogee = targetApogee;
 t_last = 0;
 Rocket.F_drag_airbrakes_out = [];
 %% Main Loop
-while Rocket.state ~= "landed"  && t(end) < 100
+while Rocket.state ~= "descent"  && t(end) < 100
     t(end+1) = t(end) + dt;
     
     Rocket.state = state_update(Rocket);
@@ -147,9 +147,15 @@ while Rocket.state ~= "landed"  && t(end) < 100
     
     % Add controller, containing FP model and use that to update the
     % airbrake position
+    
+    %During the rest of the flight
+    if Rocket.state == "burning" || Rocket.state == "descent"
+        Rocket.airbrake.position = 0;
+        Rocket.airbrake.velocity = 0;
+    end
 
     %During coasting phase
-    if Rocket.state == "burntout" && t(end) > 5 && t_last + 0.5 < t(end)
+    if Rocket.state == "burntout" && t(end) > 5 && t_last + 0.2 < t(end)
         t_last = t(end);
         % Predict the apogee using apa(current states, timestep)
         predicted_apogee = apa(Rocket.x(end,:), 0.01);
@@ -159,10 +165,7 @@ while Rocket.state ~= "landed"  && t(end) < 100
         Rocket.airbrake = Rocket.airbrake.updateVelocity(output);
     end
 
-    if Rocket.state == "burning" || Rocket.state == "descent"
-        Rocket.airbrake.position = 0;
-        Rocket.airbrake.velocity = 0;
-    end
+
     airbrake_velocity_log = [airbrake_velocity_log, Rocket.airbrake.velocity];
     airbrake_position_log = [airbrake_position_log,Rocket.airbrake.position];
     error_log = [error_log, predicted_apogee - targetApogee];
