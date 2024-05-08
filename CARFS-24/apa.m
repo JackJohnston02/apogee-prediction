@@ -21,7 +21,7 @@ g = -9.81 * (6371e3/(6371e3 + x(1)))^2; % Gravity as function of altitude
 T = T_0 - L * x(1);
 rho =  1.225 * (1 - (0.0065 * x(1)) / T)^(9.80665 / (287.05 * 0.0065));
 
-Cc = 2 * (x(3) - g) / (rho * (x(2) * x(2)));
+Cc = 2.045 * (x(3) - g) / (rho * (x(2) * x(2))); %2.075 should really be 2.0, adapted as correction
 
 while x(2) > 0 && x(1) < 5000
  g = -9.81 * (6371e3/(6371e3 + x(1)))^2; % Gravity as function of altitude

@@ -32,6 +32,7 @@ classdef Airbrake
                 else
                     obj.velocity = obj.maxVelocity;
                 end
+                
             end
         end
         
@@ -46,6 +47,7 @@ classdef Airbrake
                     obj.position = obj.minPosition;
                 else
                     obj.position = obj.maxPosition;
+                    obj.velocity = 0;
                 end
             end
         end

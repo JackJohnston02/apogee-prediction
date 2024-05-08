@@ -47,19 +47,22 @@ if plot_control_output == true
     title('Airbrake Velocity vs Time');
     xlabel('Time (s)');
     ylabel('Degrees/s');
+    grid on;  % add a grid
 
     subplot(4, 1, 2);  % create a subplot
     plot(t, airbrake_position_log, 'LineWidth', 2);
     title('Airbrake Position vs Time');
     xlabel('Time (s)');
     ylabel('Degrees');
+    grid on;  % add a grid
 
     subplot(4, 1, 3);  % create a subplot
     plot(t, error_log, 'LineWidth', 2);
     title('Error vs Time');
     xlabel('Time (s)');
     ylabel('Error');
-    
+    grid on;  % add a grid
+
     subplot(4, 1, 4);  % create a subplot
     plot(t, error_log, 'LineWidth', 2);
     title('Zoomed Error vs Time');
@@ -67,4 +70,5 @@ if plot_control_output == true
     ylabel('Error');
     ylim([-5,5])
     xlim([0,t(end)])
+    grid on;  % add a grid
 end

@@ -149,7 +149,7 @@ while Rocket.state ~= "landed"  && t(end) < 100
     % airbrake position
 
     %During coasting phase
-    if Rocket.state == "burntout" && t(end) > 5 && t_last + 0.1 < t(end)
+    if Rocket.state == "burntout" && t(end) > 5 && t_last + 0.2 < t(end)
         t_last = t(end);
         % Predict the apogee
         predicted_apogee = apa(Rocket.x(end,:), 0.01);
@@ -157,6 +157,11 @@ while Rocket.state ~= "landed"  && t(end) < 100
         output = controller.calculate(setpoint, predicted_apogee);
         % Change airbrake position
         Rocket.airbrake = Rocket.airbrake.updateVelocity(output);
+    end
+
+    if Rocket.state == "burning" || Rocket.state == "descent"
+        Rocket.airbrake.position = 0;
+        Rocket.airbrake.velocity = 0;
     end
     airbrake_velocity_log = [airbrake_velocity_log, Rocket.airbrake.velocity];
     airbrake_position_log = [airbrake_position_log,Rocket.airbrake.position];
