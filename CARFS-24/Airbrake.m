@@ -3,6 +3,9 @@ classdef Airbrake
     %Method for updating maximum motor speed based on experienced drag
     %force Fd
 
+    %Not convinced I havent made a mistake somewhere, the output plots seem
+    %an awful lot faster than expected?
+
     properties
         %Flap properties
         maxAngle
