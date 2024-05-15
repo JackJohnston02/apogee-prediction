@@ -1,8 +1,4 @@
 classdef Airbrake
-%Todo
-    %Method for updating maximum motor speed based on experienced drag
-    %force Fd
-
     properties
         %Flap properties
         maxAngle
@@ -10,7 +6,6 @@ classdef Airbrake
         angle
         Cd
         A
-        Fd
 
         %Motor properties
         maxVelocity
@@ -39,7 +34,7 @@ classdef Airbrake
             obj.A = (57 * 10^(-3) * 10*10^(-2));   % Reference area, at max deployment  
 
             %Motor properties
-            obj.maxVelocity = 100/60;%RPS for motor
+            obj.maxVelocity = 2500/60;%RPS for motor
             obj.minVelocity = -obj.maxVelocity;%RPS for motor
             obj.Velocity = 0/60;%RPS
             
@@ -50,7 +45,9 @@ classdef Airbrake
             obj.minP = sqrt(obj.L1^2 - 2*(obj.L1 * sin(deg2rad(obj.maxAngle)))^2 + obj.L2^2);
             obj.P = sqrt(obj.L1^2 - 2*(obj.L1 * sin(deg2rad(obj.angle)))^2 + obj.L2^2); %mm, Initial crucifix position
             obj.pitch = 6/1000;%mm, Pitch of lead screw threads
-            obj.gearRatio = 5;%x:1        
+            obj.gearRatio = 5;%x:1
+  
+            
         end
         
         
@@ -71,14 +68,15 @@ classdef Airbrake
             if newVel < obj.minVelocity
                 newVel = obj.minVelocity;
             end   
-            obj.Velocity = newVel;
+            obj.Velocity = newVel
         end
 
         % Method to update the crucifix and airbrake position
         function obj = updateAirbrakes(obj, dt)
             %update crucifix position
-            linVel = obj.pitch * obj.Velocity/obj.gearRatio; %Velocity is pitch * RPS
+            linVel = obj.pitch * obj.Velocity; %Velocity is pitch * RPS
             obj.P = obj.P + linVel * dt;
+
             %Check P for the limits
             if obj.P > obj.maxP
                 %disp("maxxed out P " + obj.P );

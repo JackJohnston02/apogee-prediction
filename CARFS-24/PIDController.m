@@ -11,9 +11,9 @@ classdef PIDController
     
     methods
         function obj = PIDController()
-            obj.K = 0.01; %Pre gain
-            obj.Kp = 100; %Proportional gain
-            obj.Ki = 50; %Integral gain
+            obj.K = 1; %Pre gain
+            obj.Kp = 0.1; %Proportional gain
+            obj.Ki = 0.05; %Integral gain
             obj.Kd = 0; %Derivative gain
             obj.integralTerm = 0;
             obj.lastError = 0;
@@ -21,7 +21,7 @@ classdef PIDController
         end
         
        function output = calculate(obj, setpoint, process_variable)
-            error = process_variable - setpoint;
+            error = setpoint - process_variable;
             error = obj.K * error;
             P = obj.Kp * error;
             obj.integralTerm = obj.integralTerm + obj.Ki * error;

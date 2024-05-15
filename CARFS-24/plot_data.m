@@ -46,17 +46,19 @@ if plot_control_output == true
     set(control_output_fig, 'Name', 'Rocket Dynamics', 'NumberTitle', 'off');
 
     subplot(4, 1, 1);  % create a subplot
-    plot(t, airbrake_velocity_log, 'LineWidth', 2);
-    title('Airbrake Velocity vs Time');
+    plot(t, -airbrake_position_log, 'LineWidth', 2);
+    title('Crucifix position vs Time');
     xlabel('Time (s)');
-    ylabel('Degrees/s');
+    ylabel('P (m)');
+    xlim([0,t(end)])
     grid on;  % add a grid
 
     subplot(4, 1, 2);  % create a subplot
-    plot(t, airbrake_position_log, 'LineWidth', 2);
+    plot(t, airbrake_angle_log, 'LineWidth', 2);
     title('Airbrake Position vs Time');
     xlabel('Time (s)');
     ylabel('Degrees');
+    xlim([0,t(end)])
     grid on;  % add a grid
 
     subplot(4, 1, 3);  % create a subplot
@@ -64,6 +66,7 @@ if plot_control_output == true
     title('Error vs Time');
     xlabel('Time (s)');
     ylabel('Error');
+    xlim([0,t(end)])
     grid on;  % add a grid
 
     subplot(4, 1, 4);  % create a subplot
@@ -85,7 +88,7 @@ if animation_airbrake_position == true
     clear figure;
     
     % Create a rectangle
-    originalVertices = [0 0; 0.1 0; 0.1 -1.5; 0 -1.5];
+    originalVertices = 0.5*[0 0; 0.1 0; 0.1 -1.5; 0 -1.5];
     rectangle = patch('Vertices', originalVertices, 'Faces', [1 2 3 4], 'FaceColor', 'b');
     
     % Set the axes limits
@@ -104,7 +107,7 @@ if animation_airbrake_position == true
         tic;
         
         % Convert the angle from degrees to radians
-        theta = deg2rad(airbrake_position_log(i));
+        theta = deg2rad(airbrake_angle_log(i));
         
         % Create the rotation matrix
         R = [cos(theta) -sin(theta); sin(theta) cos(theta)];
@@ -116,7 +119,7 @@ if animation_airbrake_position == true
         drawnow;
         
         timeText.String = ['Time: ', sprintf('%.2f', t(i))];
-        posText.String = ['Angle: ', sprintf('%.2f', airbrake_position_log(i))];
+        posText.String = ['Angle: ', sprintf('%.2f', airbrake_angle_log(i))];
         
         % Compute the time it took to execute the above commands
         elapsedTime = toc;

@@ -25,14 +25,13 @@ function [Rocket] = dynamics_update(Rocket, t, dt)
     F_drag_body = -0.5 * Cd * Rocket.area * rho * Rocket.x(end,2)^2;
 
 %% Get airbrake drag 
-
-    cd_times_A = Rocket.airbrake.getCdTimesA(Ma);
-    F_drag_airbrakes = -0.5 * cd_times_A * rho * Rocket.x(end,2)^2;
-    Rocket.F_drag_airbrakes_out = [Rocket.F_drag_airbrakes_out, F_drag_airbrakes];
+    cd_times_A = Rocket.Airbrake.getCdTimesA(Ma);
+    Rocket.Airbrake.Fd = -0.5 * cd_times_A * rho * Rocket.x(end,2)^2;
     
+
     F_thrust = Rocket.thrust(t);
     %Calculate net force acting on the rocket
-    F = F_thrust + F_drag_body + F_drag_airbrakes;
+    F = F_thrust + F_drag_body + Rocket.Airbrake.Fd;
 
     %Calculate net acceleration
     u = g + F/Rocket.mass(t);

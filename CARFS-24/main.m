@@ -130,9 +130,9 @@ Rocket.x(1,2) = 0;
 Rocket.x(1,3) = -9.81;
 
 Rocket.state = "pad";
-Rocket.airbrake = Airbrake(maxPosition, minPosition);
-airbrake_position_log = [Rocket.airbrake.position];
- airbrake_velocity_log = [0];
+Rocket.Airbrake = Airbrake();
+airbrake_position_log = [Rocket.Airbrake.P];
+airbrake_angle_log = [Rocket.Airbrake.angle];
 error_log = [0];
 predicted_apogee = targetApogee;
 t_last = 0;
@@ -142,32 +142,26 @@ while Rocket.state ~= "descent"  && t(end) < 100
     t(end+1) = t(end) + dt;
     
     Rocket.state = state_update(Rocket);
-    Rocket.airbrake = Rocket.airbrake.updatePosition(dt);
     Rocket = dynamics_update(Rocket, t(end), dt);
+    Rocket.Airbrake = Rocket.Airbrake.updateAirbrakes(dt);
     
     % Add controller, containing FP model and use that to update the
     % airbrake position
-    
-    %During the rest of the flight
-    if Rocket.state == "burning" || Rocket.state == "descent"
-        Rocket.airbrake.position = 0;
-        Rocket.airbrake.velocity = 0;
-    end
 
     %During coasting phase
-    if Rocket.state == "burntout" && t(end) > 5 && t_last + 0.2 < t(end)
+    if Rocket.state == "burntout" && t(end) > 5 && t_last + 0.1 < t(end)
         t_last = t(end);
         % Predict the apogee using apa(current states, timestep)
         predicted_apogee = apa(Rocket.x(end,:), 0.01);
         % Calculate the controller output
         output = controller.calculate(setpoint, predicted_apogee);
         % Change airbrake position
-        Rocket.airbrake = Rocket.airbrake.updateVelocity(output);
+        Rocket.Airbrake = Rocket.Airbrake.updateMotorVelocity(output);
     end
 
 
-    airbrake_velocity_log = [airbrake_velocity_log, Rocket.airbrake.velocity];
-    airbrake_position_log = [airbrake_position_log,Rocket.airbrake.position];
+    airbrake_position_log = [airbrake_position_log, Rocket.Airbrake.P];
+    airbrake_angle_log = [airbrake_angle_log,Rocket.Airbrake.angle];
     error_log = [error_log, predicted_apogee - targetApogee];
 end
 
