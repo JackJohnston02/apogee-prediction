@@ -126,5 +126,5 @@ if animation_airbrake_position == true
         if pauseTime > 0
             pause(pauseTime);
         end
-end
+    end
 end
