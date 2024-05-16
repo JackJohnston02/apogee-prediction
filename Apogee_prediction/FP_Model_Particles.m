@@ -1,4 +1,4 @@
-function [alt_mean, alt_sigma] = FP_Model(x, P, t, dt)
+function [alt_mean, alt_sigma] = FP_Model_Particles(x, P, t, dt)
 %FORWARDPROPAGATION Summary of this function goes here
 %   Detailed explanation goes here
     %Calcualte Cd

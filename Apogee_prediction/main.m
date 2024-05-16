@@ -126,7 +126,7 @@ while ~landed && k < 2000
     % Predict apogee after 0.1 second after motor burn-out and before apogee is detected
     if motor_burntout && t >  0.1 + burnout_time && ~apogee_detected
     
-        [lower_bound, predicted_apogee_altitude, upper_bound] =  FP_Model(x, P, t, dt);
+        [lower_bound, predicted_apogee_altitude, upper_bound] =  FP_Model_UKF(x, P, dt).getApogee();
         predicted_apogee_altitudes = [predicted_apogee_altitudes, predicted_apogee_altitude];
         lower_bounds = [lower_bounds, lower_bound];
         upper_bounds = [upper_bounds, upper_bound];
