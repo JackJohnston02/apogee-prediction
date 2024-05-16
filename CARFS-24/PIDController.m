@@ -11,10 +11,10 @@ classdef PIDController
     
     methods
         function obj = PIDController()
-            obj.K = 1; %Pre gain
-            obj.Kp = 0.1; %Proportional gain
-            obj.Ki = 0.05; %Integral gain
-            obj.Kd = 0; %Derivative gain
+            obj.K = 0.01; %Pre gain
+            obj.Kp = 1; %Proportional gain
+            obj.Ki = 25; %Integral gain
+            obj.Kd = 5; %Derivative gain
             obj.integralTerm = 0;
             obj.lastError = 0;
             obj.setpoint = 0;

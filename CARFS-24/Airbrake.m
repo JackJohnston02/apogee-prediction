@@ -41,8 +41,8 @@ classdef Airbrake
             obj.Cd = 1.8;  % Drag coefficient, function of Mach number
             obj.A = (57 * 10^(-3) * 10*10^(-2));   % Reference area, at max deployment  
 
-            %Motor properties
-            obj.maxVelocity = 100/60;%RPS for motor
+            %Motor properties - https://www.nanotec.com/eu/en/products/1333-sc4118l1804-eno05k#dimensions
+            obj.maxVelocity = 50/60;%RPS for motor
             obj.minVelocity = -obj.maxVelocity;%RPS for motor
             obj.Velocity = 0/60;%RPS
             
