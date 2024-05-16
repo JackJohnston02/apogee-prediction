@@ -1,4 +1,4 @@
-function [alt_mean, alt_sigma] = FP_Model_Particles(x, P, t, dt)
+function [alt_mean, alt_sigma] = FP_Model_Particles(x, P, dt)
 %FORWARDPROPAGATION Summary of this function goes here
 %   Detailed explanation goes here
     %Calcualte Cd
@@ -14,7 +14,7 @@ function [alt_mean, alt_sigma] = FP_Model_Particles(x, P, t, dt)
     %calculate the air density
     
     %% Generate sample of particles from the posterior mean and covariance of the rocket state
-    numParticles = 1;  
+    numParticles = 10000;  
     
     P = (P + P') / 2;%make sure P is symmetric
     
@@ -28,8 +28,8 @@ function [alt_mean, alt_sigma] = FP_Model_Particles(x, P, t, dt)
         particles = mvnrnd(x, P, numParticles);%Not sure if this is the correct function?
     end
 
-    T_0 = 260;
-    L = 0.0065; 
+   T_0 = 260;
+   L = 0.0065;
 
     %% Perform prediction until the velocity prediction is zero
     for i = 1:numParticles
