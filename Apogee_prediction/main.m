@@ -2,8 +2,6 @@
 %TODO
     %Additional UKF, limited sigma points - https://ieeexplore.ieee.org/stamp/stamp.jsp?tp=&arnumber=6057978
     %From Joe: "Cubature, Gauss-Hermite, etc. Could also do a EKF and 2nd order EKF too as the fastest implentations and an iterated EKF as a best of both worlds:
-
-clear all
 data = readtable('data/owen.csv');
 
 CROP = 2000;

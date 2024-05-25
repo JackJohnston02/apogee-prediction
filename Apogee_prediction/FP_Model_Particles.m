@@ -14,7 +14,7 @@ function [alt_mean, alt_sigma] = FP_Model_Particles(x, P, dt)
     %calculate the air density
     
     %% Generate sample of particles from the posterior mean and covariance of the rocket state
-    numParticles = 10000;  
+    numParticles = 1000;  
     
     P = (P + P') / 2;%make sure P is symmetric
     
