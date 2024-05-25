@@ -110,11 +110,7 @@ cd_unique = cd(idx);
 % Create an interpolation function with the unique values
 Rocket.dragcoef_off = @(x) interp1(mach_no_unique, cd_unique, x, 'linear', 'extrap');
 
-
-%% Define controller
-% Create a PID controller with Kp, Ki, and Kd
-
-
+%%
 % Set the desired apogee
 setpoint = targetApogee;
 
