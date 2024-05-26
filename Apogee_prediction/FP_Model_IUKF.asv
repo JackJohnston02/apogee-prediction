@@ -13,7 +13,6 @@ classdef FP_Model_IUKF
     methods
         function obj = FP_Model_IUKF()
             obj.iteration = 0; % Initialize iteration count
-            obj.b = [0,0,0,0];
         end
         
         % State transition function
@@ -41,7 +40,9 @@ classdef FP_Model_IUKF
             for i = 1:length(obj.x0(:,1))
                 X(i, 4) = 1;
             end
-            obj.b = (X' * X)^(-1) * X' * y;%Matrix containing the linear model coefficients
+
+
+            obj.b = (X' );%Matrix containing the linear model coefficients
         end
 
         % Perform linear prediction using the 4D linear model
@@ -52,16 +53,16 @@ classdef FP_Model_IUKF
             xddot = obj.x(3); % Acceleration
             
             % Assuming linear relationship coefficients
-            m1 = obj.b(1); % Coefficient for altitude
-            m2 = obj.b(2); % Coefficient for velocity
-            m3 = obj.b(3); % Coefficient for acceleration
-            c = obj.b(4); % Intercept
+            m1 = 0.1; % Coefficient for altitude
+            m2 = 0.2; % Coefficient for velocity
+            m3 = 0.3; % Coefficient for acceleration
+            c = 100; % Intercept
             
             % Linear prediction using the 4D linear model
             xPred = m1 * x + m2 * xdot + m3 * xddot + c;
             
             % Assuming constant process noise covariance for linear model
-            Q_linear = 200 * eye(1); % Adjust the covariance according to system
+            Q_linear = 0.1 * eye(1); % Adjust the covariance according to your system
             
             % Covariance prediction for linear model
             PPred = obj.P + Q_linear;
@@ -128,7 +129,7 @@ classdef FP_Model_IUKF
             obj.dt = dt;
             if obj.iteration >= 10
                 [xPred, PPred, obj] = obj.predict();
-                obj = obj.updateLinearF();
+                obj.updateLinearF()
                 obj.iteration = 0;
             else
                 [xPred, PPred] = obj.linearPredict();
