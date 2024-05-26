@@ -131,7 +131,7 @@ while ~landed && ~apogee_detected && k < length(timestamp)
         % Predict apogee after 0.1 second after motor burn-out and before apogee is detected
     
         fpcount = fpcount + 1;
-   if motor_burntout && fpcount > 10 %&& t >  0.5 + burnout_time && ~apogee_detected
+   if motor_burntout && fpcount > 1 %&& t >  0.5 + burnout_time && ~apogee_detected
         [predicted_apogee_altitude, predicted_apogee_sigma, IUKF] =  IUKF.getApogee(x, P, dt);
         %[predicted_apogee_altitude, predicted_apogee_sigma] =  FP_Model_UKF(x, P, dt).getApogee();
         %[predicted_apogee_altitude, predicted_apogee_sigma] = FP_Model_Particles(x, P, dt);

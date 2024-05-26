@@ -1,4 +1,32 @@
 classdef FP_Model_IUKF
+% FP_Model_IUKF - Class for performing Unscented Kalman Filter (UKF) predictions
+%
+% This class implements a model for performing predictions using the Unscented Kalman Filter (UKF).
+% It includes methods for state transition, linear prediction using a 4D linear model, and performing
+% UKF prediction. The class also provides functionality for updating the linear model coefficients and
+% obtaining predicted apogee altitude and sigma.
+%
+% Properties:
+%   x             - State vector representing altitude, velocity, and acceleration
+%   x0            - Initial conditions used to calculate linear model coefficients
+%   P             - State covariance matrix
+%   Q             - Process noise covariance matrix
+%   dt            - Timestep
+%   b             - Matrix containing the variables for the linear model
+%   papogees      - Predicted apogee for each of the sigma points (final altitudes)
+%   iteration     - Prediction iteration count
+%
+% Methods:
+%   FP_Model_IUKF - Constructor method to initialize the class object
+%   f             - State transition function
+%   updateLinearF - Update linear model coefficients
+%   linearPredict - Perform linear prediction using the 4D linear model
+%   predict       - Perform UKF prediction
+%   getApogee     - Get predicted apogee altitude and sigma
+%
+% Author: Jack Johnston
+% Date: 26/05/24
+
     properties
         x;  % State
         x0; %Initial conditions, used to calculate b
@@ -137,7 +165,6 @@ classdef FP_Model_IUKF
             obj.iteration = obj.iteration + 1;
             predicted_apogee_altitude = xPred(1);
             predicted_apogee_sigma = sqrt(PPred(1,1));
-            disp(obj.iteration)
         end
 
     end

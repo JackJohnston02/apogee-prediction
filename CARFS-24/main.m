@@ -148,6 +148,7 @@ while Rocket.state ~= "descent"  && t(end) < 100
         
         measurements = Rocket.x(end,:) + [0*randn(1), 0*randn(1) , 0*randn(1)]; %Generate noisy measurements based on the rocekts states
         predicted_apogee = apa(measurements, 0.01);
+        
         % Calculate the controller output
         output = controller.calculate(setpoint, predicted_apogee);
         % Change airbrake position
