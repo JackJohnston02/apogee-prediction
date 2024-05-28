@@ -42,7 +42,7 @@ classdef Airbrake
             obj.A = (57 * 10^(-3) * 10*10^(-2));   % Reference area, at max deployment  
 
             %Motor properties - https://www.nanotec.com/eu/en/products/1333-sc4118l1804-eno05k#dimensions
-            obj.maxVelocity = 50/60;%RPS for motor
+            obj.maxVelocity = 1500/60;%RPS for motor
             obj.minVelocity = -obj.maxVelocity;%RPS for motor
             obj.Velocity = 0/60;%RPS
             

@@ -5,6 +5,8 @@ classdef FP_Model_IUKF
 % It includes methods for state transition, linear prediction using a 4D linear model, and performing
 % UKF prediction. The class also provides functionality for updating the linear model coefficients and
 % obtaining predicted apogee altitude and sigma.
+% The object switches between the UKF and the linear prediction based on a
+% predifined frequency.
 %
 % Properties:
 %   x             - State vector representing altitude, velocity, and acceleration
@@ -31,16 +33,19 @@ classdef FP_Model_IUKF
         x;  % State
         x0; %Initial conditions, used to calculate b
         P;  % State covariance
+        p0; %Initial covariance, from the last UKF update
         Q;  % Process noise covariance
         dt; % Timestep
         b;  %Matrix containing the variables for the linear model
         papogees;%Predicted apogee for each of the sigma points, final altitudes
         iteration; % Prediction iteration count
+        iteration_period; % Length of one UKF/ Linear function cycle
     end
     
     methods
         function obj = FP_Model_IUKF()
-            obj.iteration = 0; % Initialize iteration count
+            obj.iteration_period = 50;
+            obj.iteration = 0; % Initialize iteration count, ensure first prediction is performed by the UKF
             obj.b = [0,0,0,0];
         end
         
@@ -89,7 +94,7 @@ classdef FP_Model_IUKF
             xPred = m1 * x + m2 * xdot + m3 * xddot + c;
             
             % Assuming constant process noise covariance for linear model
-            Q_linear = 200 * eye(1); % Adjust the covariance according to system
+            Q_linear = obj.iteration*10 * eye(1); % Adjust the covariance according to system
             
             % Covariance prediction for linear model
             PPred = obj.P + Q_linear;
@@ -150,11 +155,11 @@ classdef FP_Model_IUKF
 
         end
         % Get predicted apogee altitude and sigma
-        function [predicted_apogee_altitude, predicted_apogee_sigma, obj] = getApogee(obj, x0, P0, dt)
-            obj.x = x0;
-            obj.P = P0;
+        function [predicted_apogee_altitude, predicted_apogee_sigma, obj] = getApogee(obj, x, P, dt)
+            obj.x = x;
+            obj.P = P;
             obj.dt = dt;
-            if obj.iteration >= 10
+            if obj.iteration >= obj.iteration_period
                 [xPred, PPred, obj] = obj.predict();
                 obj = obj.updateLinearF();
                 obj.iteration = 0;
