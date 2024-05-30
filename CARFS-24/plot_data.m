@@ -14,7 +14,10 @@ if plot_dynamics == true
 
     % Plot altitude
     subplot(3, 1, 1);  % create a subplot
-    plot(t, Rocket.x(:,1), 'LineWidth', 2);
+    hold on;
+    scatter(t, error_log + targetApogee, 2, "red"); %Predicted apogee at time t
+    plot(t, Rocket.x(:,1), 'LineWidth', 2, "Color",[0 0 1]); %Altitude at time t
+    hold off; 
     title('Altitude vs Time');
     xlabel('Time (s)');
     ylabel('Altitude (m)');
@@ -87,19 +90,21 @@ if animation_airbrake_position == true
     ax = axes;
     clear figure;
     
-    % Create a rectangle
-    originalVertices = 0.5*[0 0; 0.1 0; 0.1 -1.5; 0 -1.5];
-    rectangle = patch('Vertices', originalVertices, 'Faces', [1 2 3 4], 'FaceColor', 'b');
+    % Create a rectangle with non-zero dimensions
+    originalVertices = [0 0; 5 0; 5 -110; 0 -110];
+    rectangleC = patch('Vertices', [-36, 75; 36, 75; 35.75, 0; -35.75, 0], 'Faces', [1 2 3 4], 'FaceColor', 'B');
+    rectangleL = patch('Vertices', originalVertices, 'Faces', [1 2 3 4], 'FaceColor', 'r');
+    rectangleR = patch('Vertices', originalVertices, 'Faces', [1 2 3 4], 'FaceColor', 'r');
     
-    % Set the axes limits
-    axis([-2 2 -2 2]);
+    % Set the axes limits to ensure the rectangle is visible
+    axis([-120 120 -120 120]);
     axis square;
     
-    viscircles([0 0], 0.02, 'Color', 'r');
-    
+    circleL = viscircles([-35.75 0], 1, 'Color', 'r');  % Adjusted the circle radius for visibility
+    circleR = viscircles([35.75 0], 1, 'Color', 'r');  % Adjusted the circle radius for visibility
     % Create a text object for displaying time
-    timeText = text(0, 1.5, '', 'HorizontalAlignment', 'center','FontSize', 14);
-    posText = text(0, 1.25, '', 'HorizontalAlignment', 'center','FontSize', 14);
+    timeText = text(0, 110, '', 'HorizontalAlignment', 'center','FontSize', 14);
+    posText = text(0, 100, '', 'HorizontalAlignment', 'center','FontSize', 14);
     
     % Animate the rectangle
     for i = 1:length(t)-1
@@ -113,8 +118,19 @@ if animation_airbrake_position == true
         R = [cos(theta) -sin(theta); sin(theta) cos(theta)];
         
         % Apply the rotation matrix to the rectangle vertices
-        rectangle.Vertices = (R * originalVertices')';
+        rotatedVertices = (R * originalVertices')';
         
+        % Mirror the rectangle around the vertical axis (y-axis)
+        mirroredVertices = rotatedVertices;
+        mirroredVertices(:,1) = -mirroredVertices(:,1);  % Negate the x-coordinates
+        
+        % Update the vertices of the rectangles
+        rectangleR.Vertices = rotatedVertices;
+        rectangleL.Vertices = mirroredVertices;
+        
+        % Translate both flaps, away from central axis
+        rectangleR.Vertices = rectangleR.Vertices + [35.75,0];
+        rectangleL.Vertices = rectangleL.Vertices + [-35.75,0];
         % Update the plot
         drawnow;
         
@@ -131,3 +147,4 @@ if animation_airbrake_position == true
         end
     end
 end
+

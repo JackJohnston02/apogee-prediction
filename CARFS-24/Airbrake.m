@@ -39,10 +39,10 @@ classdef Airbrake
             obj.minAngle = 0;
             obj.angle = obj.minAngle;  % Initial position
             obj.Cd = 1.8;  % Drag coefficient, function of Mach number
-            obj.A = (57 * 10^(-3) * 10*10^(-2));   % Reference area, at max deployment  
+            obj.A = (57 * 10^(-3) * 110*10^(-3));   % Reference area, at max deployment  
 
             %Motor properties - https://www.nanotec.com/eu/en/products/1333-sc4118l1804-eno05k#dimensions
-            obj.maxVelocity = 1500/60;%RPS for motor
+            obj.maxVelocity = 50/60;%RPS for motor
             obj.minVelocity = -obj.maxVelocity;%RPS for motor
             obj.Velocity = 0/60;%RPS
             
