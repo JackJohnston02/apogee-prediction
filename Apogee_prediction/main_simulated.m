@@ -1,6 +1,7 @@
 data = readtable('data/simulated/Regulus/Regulus 100.0Hz.csv');
 motor_path = ("data/simulated/Regulus/Cesaroni_4025L1355-P.eng");
 rocket_path = ("data/simulated/Regulus/Rocket.txt");
+rng('default');
 
 thrust_function = create_thrust_function(motor_path);
 mass_function = create_mass_function(rocket_path);
@@ -62,7 +63,7 @@ predicted_apogee_sigmas = [0];
 
 prediction_times = [0];
 
-IUKF = FP_Model_IUKF();
+IUKF = FP_Model_IUKF_1();
 k = 1;
 t = 0;
 times = [t];
@@ -81,7 +82,7 @@ while ~landed && ~apogee_detected && k < length(timestamp)
         0 1 dt; 
         0 0 1]; % State transition
     
-    B = [0 0 dt]';
+    B = [0 0 0]';
     %Control Input u ~ only thrust curve for these sims
         %Can't just add the thrust needs to be converted to a force
         %If keep adding force it spirals out of control, force as faction
@@ -131,9 +132,8 @@ while ~landed && ~apogee_detected && k < length(timestamp)
         % Predict apogee after 0.1 second after motor burn-out and before apogee is detected
     
         fpcount = fpcount + 1;
-   if motor_burntout && fpcount > 1  t >  1 + burnout_time && ~apogee_detected
-        [predicted_apogee_altitude, predicted_apogee_sigma, IUKF] =  IUKF.getApogee(x, P, dt);
-        %[predicted_apogee_altitude, predicted_apogee_sigma] =  FP_Model_UKF(x, P, dt).getApogee();
+   if motor_burntout && fpcount > 10 && t >  1 + burnout_time && ~apogee_detected
+        [predicted_apogee_altitude, predicted_apogee_sigma] =  FP_Model_UKF(x, P, dt).getApogee();
         %[predicted_apogee_altitude, predicted_apogee_sigma] = FP_Model_Particles(x, P, dt);
         predicted_apogee_sigmas = [predicted_apogee_sigmas, predicted_apogee_sigma];
         predicted_apogee_altitudes = [predicted_apogee_altitudes, predicted_apogee_altitude];
@@ -193,8 +193,8 @@ plot(times(1:k), x_est(1, 1:k), 'b');
 
 % Plot lower, mean, and upper of apogee predictions
 scatter(prediction_times, predicted_apogee_altitudes, 3, 'b'); 
-%scatter(prediction_times, predicted_apogee_altitudes + predicted_apogee_sigmas * 3, 3, 'r');
-%scatter(prediction_times, predicted_apogee_altitudes + predicted_apogee_sigmas * -3, 3, 'r'); 
+scatter(prediction_times, predicted_apogee_altitudes + predicted_apogee_sigmas * 3, 3, 'r');
+scatter(prediction_times, predicted_apogee_altitudes + predicted_apogee_sigmas * -3, 3, 'r'); 
 
 title('Altitude Estimates and Measured Data');
 xlabel('Time (s)');
@@ -210,8 +210,8 @@ hold off;
 nexttile;
 hold on;
 scatter(prediction_times, predicted_apogee_altitudes - apogee_altitude, 'b'); 
-%scatter(prediction_times, predicted_apogee_altitudes + predicted_apogee_sigmas * 3 - apogee_altitude, 'r');
-%scatter(prediction_times, predicted_apogee_altitudes + predicted_apogee_sigmas * -3 - apogee_altitude, 'r'); 
+scatter(prediction_times, predicted_apogee_altitudes + predicted_apogee_sigmas * 3 - apogee_altitude, 'r');
+scatter(prediction_times, predicted_apogee_altitudes + predicted_apogee_sigmas * -3 - apogee_altitude, 'r'); 
 
 title('Apogee Predictions and True Apogee');
 xlabel('Time (s)');

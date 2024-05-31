@@ -1,10 +1,9 @@
 classdef FP_Model_IUKF
 % FP_Model_IUKF - Class for performing Unscented Kalman Filter (UKF) predictions
-%
+% Accelation, Velocity, Altitude use to calculate linear model coefficient
 % This class implements a model for performing predictions using the Unscented Kalman Filter (UKF).
 % It includes methods for state transition, linear prediction using a 4D linear model, and performing
-% UKF prediction. The class also provides functionality for updating the linear model coefficients and
-% obtaining predicted apogee altitude and sigma.
+% UKF prediction. The class also provides functionality for updating the linear model coefficients based on the sigma particles initial conditions for the accleration, velocity and position.
 % The object switches between the UKF and the linear prediction based on a
 % predifined frequency.
 %
@@ -45,7 +44,7 @@ classdef FP_Model_IUKF
     methods
         function obj = FP_Model_IUKF()
             obj.iteration_period = 50;
-            obj.iteration = 0; % Initialize iteration count, ensure first prediction is performed by the UKF
+            obj.iteration = obj.iteration_period; % Initialize iteration count, ensure first prediction is performed by the UKF
             obj.b = [0,0,0,0];
         end
         
@@ -90,13 +89,15 @@ classdef FP_Model_IUKF
             m3 = obj.b(3); % Coefficient for acceleration
             c = obj.b(4); % Intercept
             
+            
             % Linear prediction using the 4D linear model
             xPred = m1 * x + m2 * xdot + m3 * xddot + c;
             
             % Assuming constant process noise covariance for linear model
             Q_linear = obj.iteration*10 * eye(1); % Adjust the covariance according to system
             
-            % Covariance prediction for linear model
+            % Covariance prediction for linear model+
+            
             PPred = obj.P + Q_linear;
         end
 

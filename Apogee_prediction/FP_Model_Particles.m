@@ -9,18 +9,15 @@ function [alt_mean, alt_sigma] = FP_Model_Particles(x, P, dt)
     %Cc = 2*a/(rho * v^2)
 
     
-    g = -9.80665;
+   
 
-    %calculate the air density
-    
     %% Generate sample of particles from the posterior mean and covariance of the rocket state
     numParticles = 1000;  
-    
     P = (P + P') / 2;%make sure P is symmetric
     
-    %For uniform Cc and rho
-    %Cc = 2 * (x(3) - g) / (rho * (x(2)*x(2)));
-    %rho = 1.225 * (1 - (0.0065 * x(1)) / 288.15)^(-g / (287.05 * 0.0065));
+    %For uniform Cc
+    %Cc = 2 * (x(3) + g) / (rho * (x(2)*x(2)));
+
     if numParticles == 1
         particles(1,:) = x;
    
@@ -28,23 +25,33 @@ function [alt_mean, alt_sigma] = FP_Model_Particles(x, P, dt)
         particles = mvnrnd(x, P, numParticles);%Not sure if this is the correct function?
     end
 
-   T_0 = 260;
-   L = 0.0065;
-
     %% Perform prediction until the velocity prediction is zero
     for i = 1:numParticles
-        T = T_0 - L * particles(i,1);
-        rho =  1.225 * (1 - (0.0065 * particles(i,1)) / T)^(9.80665 / (287.05 * 0.0065));
-        Cc = 2 * (particles(i,3) - g) / (rho * (particles(i,2)*particles(i,2)));
-        while particles(i,2) > 0 && particles(i,1) > 0 && particles(i,1) < 5000
+        % Assign states to initial conditions
+        x = particles(i,1);
+        xdot = particles(i,2);
+        xddot = particles(i,3);
+
+        rho = get_density(x);
+        g = get_gravity(x);    
+
+        Cc = 2 * (xddot + g) / (rho * (xdot^2));
+
+        while xdot > 0 && x > 0 && x < 5000
             % Propagate each particle through the prediction algorithm,
             % constant Cc model
-            T = T_0 - L * particles(i,1);
-            rho =  1.225 * (1 - (0.0065 * particles(i,1)) / T)^(9.80665 / (287.05 * 0.0065));
-            particles(i,3) = -9.81 + (0.5 * Cc * rho * particles(i,2) * particles(i,2));
-            particles(i,2) = particles(i,2) + dt * particles(i,3);
-            particles(i,1) = particles(i,1) + dt * particles(i,2);
+            rho = get_density(x);
+            g  = get_gravity(x);
+
+            xddot = -g + (0.5 * Cc * rho * xdot^2);
+            xdot = xdot + dt * xddot;
+            x = x + dt * xdot;
         end
+
+        % Reassign states at apogee to particle
+        particles(i, 1) = x;
+        particles(i, 2) = xdot;
+        particles(i, 3) = xddot;
     end
 
 
@@ -65,3 +72,27 @@ function [alt_mean, alt_sigma] = FP_Model_Particles(x, P, dt)
     
 end
 
+function rho = get_density(h)
+    % Returns atmospheric density as a function of altitude
+    % https://en.wikipedia.org/wiki/Density_of_air
+    % TODO
+        % Account of humidity in the air, this ideal gas model assumes dry
+        % air
+
+    p_0 = 101325; % Standard sea level atmospheric pressure
+    M = 0.0289652; % molar mass of dry air
+    R = 8.31445; % ideal gas constant
+    T_0 = 288.15; % Standard sea level temperature
+    L = 0.0065; % temperature lapse rate
+    g = get_gravity(h);
+
+    rho = (p_0 * M)/(R * T_0) * (1 - (L * h)/(T_0))^(((g * M) / (R* L)) - 1);
+end
+
+function g = get_gravity(h)
+    % Returns gravity as a function of altitude
+    g_0 = 9.80665; % Standard gravity
+    R_e = 6371000; % Earth radius
+
+    g = g_0 * (R_e / (R_e + h))^2;
+end
