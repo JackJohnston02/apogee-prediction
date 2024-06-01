@@ -12,7 +12,7 @@ function [alt_mean, alt_sigma] = FP_Model_Particles(x, P, dt)
    
 
     %% Generate sample of particles from the posterior mean and covariance of the rocket state
-    numParticles = 1000;  
+    numParticles = 1;  
     P = (P + P') / 2;%make sure P is symmetric
     
     %For uniform Cc
@@ -74,10 +74,8 @@ end
 
 function rho = get_density(h)
     % Returns atmospheric density as a function of altitude
+    % Accurate up to 11km
     % https://en.wikipedia.org/wiki/Density_of_air
-    % TODO
-        % Account of humidity in the air, this ideal gas model assumes dry
-        % air
 
     p_0 = 101325; % Standard sea level atmospheric pressure
     M = 0.0289652; % molar mass of dry air
@@ -91,6 +89,8 @@ end
 
 function g = get_gravity(h)
     % Returns gravity as a function of altitude
+    % Approximates the Earth's gravity assumes a perfect sphere
+    
     g_0 = 9.80665; % Standard gravity
     R_e = 6371000; % Earth radius
 
