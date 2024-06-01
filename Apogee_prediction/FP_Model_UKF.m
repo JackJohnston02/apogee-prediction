@@ -25,7 +25,7 @@ classdef FP_Model_UKF
             g = obj.get_gravity(x);    
             Cc = 2 * (xddot + g) / (rho * (xdot^2));
     
-            while xdot > 0 && x > 0 && x < 5000
+            while xdot > 0 && x > 0
                 rho = obj.get_density(x);
                 g  = obj.get_gravity(x);
                 xddot = -g + (0.5 * Cc * rho * xdot^2);
@@ -43,9 +43,9 @@ classdef FP_Model_UKF
             % General rule for UKF, number of sigma points is 2n + 1, so 7
 
             % Calculate coefficients for the UKF
-            alpha = 1e-3;  % from Joe
-            beta = 2;      % Unsure
-            kappa = 0;     % from Joe
+            alpha = 1;  % from The Unscented Kalman Filter for Nonlinear Estimation
+            beta = 2;      % from The Unscented Kalman Filter for Nonlinear Estimation
+            kappa = 0;     % from The Unscented Kalman Filter for Nonlinear Estimation
             lambda = alpha^2 * (n + kappa) - n;  % from Bayesian Filtering and Smoothing - Simo Sarkka
 
             % Going to need the sqrt of the cov matrix obj.P
@@ -58,7 +58,7 @@ classdef FP_Model_UKF
             X = obj.x;
             % Remaining sigma points, based on the covariance matrix
             for i = 1:n
-                X = [X, obj.x + sqrt((n + lambda) * sqrtP(:, i)), obj.x - sqrt((n + lambda) * sqrtP(:, i))];
+                X = [X, obj.x + sqrt((n + lambda)) * sqrtP(:, i), obj.x - sqrt((n + lambda)) * sqrtP(:, i)];
             end
 
             % Propagate sigma points through the nonlinear function f

@@ -1,7 +1,7 @@
 data = readtable('data/simulated/Regulus/Regulus 100.0Hz.csv');
 motor_path = ("data/simulated/Regulus/Cesaroni_4025L1355-P.eng");
 rocket_path = ("data/simulated/Regulus/Rocket.txt");
-rng('default');
+%rng("default")
 
 thrust_function = create_thrust_function(motor_path);
 mass_function = create_mass_function(rocket_path);
@@ -9,8 +9,8 @@ mass_function = create_mass_function(rocket_path);
 timestamp = data.Time;
 vel = data.VZ;
 
-alt_std = 0.1;
-acc_std = 0.1;
+alt_std = 1; % 
+acc_std = 1; % 160e-6 for BMI088 
 
 for i = 1:length(data.Z)
     alt(i) = data.Z(i) + alt_std * randn;
@@ -82,7 +82,7 @@ while ~landed && ~apogee_detected && k < length(timestamp)
         0 1 dt; 
         0 0 1]; % State transition
     
-    B = [0 0 0]';
+    B = [0 0 dt]';
     %Control Input u ~ only thrust curve for these sims
         %Can't just add the thrust needs to be converted to a force
         %If keep adding force it spirals out of control, force as faction

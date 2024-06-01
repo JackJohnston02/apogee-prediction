@@ -23,7 +23,7 @@ rocket_file_name = "Regulus";%File containing rocket data
 dt = 0.01; %Simulation timestep
 targetApogee = 3000;
 
-apa = APA_IUKF();
+apa = APA_single_particle();
 P = [1, 0.1, 0.1; 0.1, 1, 0.1; 0.1 , 0.1 , 1];
 controller = PIDController();
 
@@ -143,12 +143,12 @@ while Rocket.state ~= "descent"  && t(end) < 100
     % airbrake position
 
     %During coasting phase
-    if Rocket.state == "burntout" && t(end) > 5 && t_last + 0.01 < t(end)
+    if Rocket.state == "burntout" && t(end) > 5 && t_last + 0.05 < t(end)
         t_last = t(end);
         % Predict the apogee using apa(current states, timestep)
         
-        measurements = Rocket.x(end,:) + [0*randn(1), 0*randn(1) , 0*randn(1)]; %Generate noisy measurements based on the rocekts states
-        [predicted_apogee, predicted_apogee_sigma, apa] = apa.getApogee(measurements, P, 0.01);
+        measurements = Rocket.x(end,:) + [1*randn(1), 5*randn(1) , 1*randn(1)]; %Generate noisy measurements based on the rocekts states
+        [predicted_apogee, predicted_apogee_sigma, apa] = apa.getApogee(measurements, P, 0.1);
         
         % Calculate the controller output
         output = controller.calculate(setpoint, predicted_apogee);
