@@ -1,23 +1,10 @@
 function [alt_mean, alt_sigma] = FP_Model_Particles(x, P, dt)
-%FORWARDPROPAGATION Summary of this function goes here
-%   Detailed explanation goes here
-    %Calcualte Cd
-    %F = ma
-    %F_D = 0.5 * Cd * rho * A * v^2
-    %a = 0.5 * Cd*A/m * rho * v^2
-    %let Cd*A/m be a new constant, Cc
-    %Cc = 2*a/(rho * v^2)
-
-    
    
 
     %% Generate sample of particles from the posterior mean and covariance of the rocket state
     numParticles = 1;  
     P = (P + P') / 2;%make sure P is symmetric
     
-    %For uniform Cc
-    %Cc = 2 * (x(3) + g) / (rho * (x(2)*x(2)));
-
     if numParticles == 1
         particles(1,:) = x;
    
@@ -35,15 +22,15 @@ function [alt_mean, alt_sigma] = FP_Model_Particles(x, P, dt)
         rho = get_density(x);
         g = get_gravity(x);    
 
-        Cc = 2 * (xddot + g) / (rho * (xdot^2));
-
+        Cb = (rho * xdot^2) / (2 * (xddot - g));
+        
         while xdot > 0 && x > 0 && x < 5000
             % Propagate each particle through the prediction algorithm,
             % constant Cc model
             rho = get_density(x);
             g  = get_gravity(x);
 
-            xddot = -g + (0.5 * Cc * rho * xdot^2);
+            xddot = g + ((rho * xdot^2)/(2 * Cb));
             xdot = xdot + dt * xddot;
             x = x + dt * xdot;
         end
@@ -84,14 +71,14 @@ function rho = get_density(h)
     L = 0.0065; % temperature lapse rate
     g = get_gravity(h);
 
-    rho = (p_0 * M)/(R * T_0) * (1 - (L * h)/(T_0))^(((g * M) / (R* L)) - 1);
+    rho = (p_0 * M)/(R * T_0) * (1 - (L * h)/(T_0))^(((-g * M) / (R* L)) - 1); % -g used as g is -ve by default
 end
 
 function g = get_gravity(h)
     % Returns gravity as a function of altitude
     % Approximates the Earth's gravity assumes a perfect sphere
     
-    g_0 = 9.80665; % Standard gravity
+    g_0 = -9.80665; % Standard gravity
     R_e = 6371000; % Earth radius
 
     g = g_0 * (R_e / (R_e + h))^2;

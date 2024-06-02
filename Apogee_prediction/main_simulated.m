@@ -1,7 +1,7 @@
 data = readtable('data/simulated/Regulus/Regulus 100.0Hz.csv');
 motor_path = ("data/simulated/Regulus/Cesaroni_4025L1355-P.eng");
 rocket_path = ("data/simulated/Regulus/Rocket.txt");
-%rng("default")
+rng("default")
 
 thrust_function = create_thrust_function(motor_path);
 mass_function = create_mass_function(rocket_path);
@@ -133,8 +133,8 @@ while ~landed && ~apogee_detected && k < length(timestamp)
     
         fpcount = fpcount + 1;
    if motor_burntout && fpcount > 10 && t >  1 + burnout_time && ~apogee_detected
-        %[predicted_apogee_altitude, predicted_apogee_sigma] =  FP_Model_UKF(x, P, dt).getApogee();
-        [predicted_apogee_altitude, predicted_apogee_sigma] = FP_Model_Particles(x, P, dt);
+        [predicted_apogee_altitude, predicted_apogee_sigma] =  FP_Model_UKF(x, P, dt).getApogee();
+        %[predicted_apogee_altitude, predicted_apogee_sigma] = FP_Model_Particles(x, P, dt);
         predicted_apogee_sigmas = [predicted_apogee_sigmas, predicted_apogee_sigma];
         predicted_apogee_altitudes = [predicted_apogee_altitudes, predicted_apogee_altitude];
 

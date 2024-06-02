@@ -13,7 +13,7 @@ classdef FP_Model_UKF
             obj.Q = 0;
             obj.dt = dt;
         end
-        
+
         % State transition function
         function x_new = f(obj, x0)
             x = x0(1);
@@ -22,17 +22,21 @@ classdef FP_Model_UKF
             dt = obj.dt;
 
             rho = obj.get_density(x);
-            g = obj.get_gravity(x);    
-            Cc = 2 * (xddot + g) / (rho * (xdot^2));
-    
-            while xdot > 0 && x > 0
+            g = obj.get_gravity(x);
+
+            Cb = (rho * xdot^2) / (2 * (xddot - g));
+
+            while xdot > 0 && x > 0 && x < 5000
+                % Propagate each particle through the prediction algorithm,
+                % constant Cc model
                 rho = obj.get_density(x);
                 g  = obj.get_gravity(x);
-                xddot = -g + (0.5 * Cc * rho * xdot^2);
+
+                xddot = g + ((rho * xdot^2)/(2 * Cb));
                 xdot = xdot + dt * xddot;
                 x = x + dt * xdot;
             end
-    
+
             % Reassign states at apogee to particle
             x_new = [x; xdot; xddot];
         end
@@ -106,24 +110,26 @@ classdef FP_Model_UKF
 
         function rho = get_density(obj, h)
             % Returns atmospheric density as a function of altitude
+            % Accurate up to 11km
             % https://en.wikipedia.org/wiki/Density_of_air
-            % TODO: Account for humidity in the air, this ideal gas model assumes dry air
-            
-            p_0 = 101325;      % Standard sea level atmospheric pressure
-            M = 0.0289652;     % Molar mass of dry air
-            R = 8.31445;       % Ideal gas constant
-            T_0 = 288.15;      % Standard sea level temperature
-            L = 0.0065;        % Temperature lapse rate
+
+            p_0 = 101325; % Standard sea level atmospheric pressure
+            M = 0.0289652; % molar mass of dry air
+            R = 8.31445; % ideal gas constant
+            T_0 = 288.15; % Standard sea level temperature
+            L = 0.0065; % temperature lapse rate
             g = obj.get_gravity(h);
-            
-            rho = (p_0 * M) / (R * T_0) * (1 - (L * h) / (T_0))^(((g * M) / (R * L)) - 1);
+
+            rho = (p_0 * M)/(R * T_0) * (1 - (L * h)/(T_0))^(((-g * M) / (R* L)) - 1); % -g used as g is -ve by default
         end
 
         function g = get_gravity(obj, h)
             % Returns gravity as a function of altitude
-            g_0 = 9.80665;  % Standard gravity
-            R_e = 6371000;  % Earth radius
-        
+            % Approximates the Earth's gravity assumes a perfect sphere
+
+            g_0 = -9.80665; % Standard gravity
+            R_e = 6371000; % Earth radius
+
             g = g_0 * (R_e / (R_e + h))^2;
         end
     end
