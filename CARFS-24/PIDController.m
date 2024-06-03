@@ -11,7 +11,7 @@ classdef PIDController
     
     methods
         function obj = PIDController()
-            obj.K = 0.00002; %Pre gain
+            obj.K = 0.0002; %Pre gain
             obj.Kp = 1; %Proportional gain
             obj.Ki = 500; %Integral gain
             obj.Kd = 5; %Derivative gain

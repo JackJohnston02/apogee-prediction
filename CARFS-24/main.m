@@ -147,7 +147,7 @@ while Rocket.state ~= "descent"  && t(end) < 100
         t_last = t(end);
         % Predict the apogee using apa(current states, timestep)
         
-        measurements = Rocket.x(end,:) + [1*randn(1), 5*randn(1) , 1*randn(1)]; %Generate noisy measurements based on the rocekts states
+        measurements = Rocket.x(end,:) + [0*randn(1), 0*randn(1) , 0*randn(1)]; %Generate noisy measurements based on the rocekts states
         [predicted_apogee, predicted_apogee_sigma, apa] = apa.getApogee(measurements, P, 0.1);
         
         % Calculate the controller output
