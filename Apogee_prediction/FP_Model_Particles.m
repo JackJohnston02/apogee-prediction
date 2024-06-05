@@ -32,7 +32,7 @@ function [alt_mean, alt_sigma] = FP_Model_Particles(x, P, dt)
 
             xddot = g + ((rho * xdot^2)/(2 * Cb));
             xdot = xdot + dt * xddot;
-            x = x + dt * xdot;
+            x = x + dt * xdot + 0.5 * xddot * dt^2; % Need to confirm is taylor expansions or just straight euler integration is correct
         end
 
         % Reassign states at apogee to particle
