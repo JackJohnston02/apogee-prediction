@@ -49,7 +49,7 @@ if plot_control_output == true
     set(control_output_fig, 'Name', 'Rocket Dynamics', 'NumberTitle', 'off');
 
     subplot(4, 1, 1);  % create a subplot
-    plot(t, -airbrake_position_log, 'LineWidth', 2);
+    plot(t, -airbrake_position_log * 1000, 'LineWidth', 2);
     title('Crucifix position vs Time');
     xlabel('Time (s)');
     ylabel('P (m)');

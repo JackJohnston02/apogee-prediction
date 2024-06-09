@@ -35,11 +35,11 @@ classdef Airbrake
         % Constructor function
         function obj = Airbrake()
             %Flap properties
-            obj.maxAngle = 55;
+            obj.maxAngle = 45;
             obj.minAngle = 0;
             obj.angle = obj.minAngle;  % Initial position
             obj.Cd = 1.8;  % Drag coefficient, function of Mach number
-            obj.A = (57 * 10^(-3) * 110*10^(-3));   % Reference area, at max deployment  
+            obj.A = (57 * 10^(-3) * 165*10^(-3));   % Reference area, at 90 degrees  
 
             %Motor properties - https://www.nanotec.com/eu/en/products/1333-sc4118l1804-eno05k#dimensions
             obj.maxVelocity = 100/60;%RPS for motor
@@ -47,8 +47,8 @@ classdef Airbrake
             obj.Velocity = 0/60;%RPS
             
             %Mechanism properties
-            obj.L1 = 30/1000;%m, Length of upper control arm
-            obj.L2 = 55/1000;%m, Length of lower control arm
+            obj.L1 = 45/1000;%m, Length of upper control arm
+            obj.L2 = 57/1000;%m, Length of lower control arm
             obj.maxP = sqrt(obj.L1^2 - 2*(obj.L1 * sin(deg2rad(obj.minAngle)))^2 + obj.L2^2);
             obj.minP = sqrt(obj.L1^2 - 2*(obj.L1 * sin(deg2rad(obj.maxAngle)))^2 + obj.L2^2);
             obj.P = sqrt(obj.L1^2 - 2*(obj.L1 * sin(deg2rad(obj.angle)))^2 + obj.L2^2); %mm, Initial crucifix position

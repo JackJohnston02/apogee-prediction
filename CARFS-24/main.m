@@ -21,7 +21,7 @@ clear
 %% Simulation Settings
 rocket_file_name = "Regulus";%File containing rocket data
 dt = 0.01; %Simulation timestep
-targetApogee = 3000;
+targetApogee = 0;
 
 apa = APA_single_particle();
 P = [1, 0.1, 0.1; 0.1, 1, 0.1; 0.1 , 0.1 , 1];
@@ -143,7 +143,7 @@ while Rocket.state ~= "descent"  && t(end) < 100
     % airbrake position
 
     %During coasting phase
-    if Rocket.state == "burntout" && t(end) > 5 && t_last + 0.05 < t(end)
+    if Rocket.state == "burntout" && t(end) > 5 && t_last + 0.1 < t(end)
         t_last = t(end);
         % Predict the apogee using apa(current states, timestep)
         
