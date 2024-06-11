@@ -21,7 +21,7 @@ clear
 %% Simulation Settings
 rocket_file_name = "Regulus";%File containing rocket data
 dt = 0.01; %Simulation timestep
-targetApogee = 0;
+targetApogee = 3000;
 
 apa = APA_single_particle();
 P = [1, 0.1, 0.1; 0.1, 1, 0.1; 0.1 , 0.1 , 1];
@@ -67,7 +67,6 @@ Rocket.thrust = @(t) (t >= 0 & t < 0.1) .* (t * (thrust_data(1,2) / 0.1)) + ...
                      (t >= 0.1 & t <= Rocket.burntime) .* interp1(thrust_data(:,1), thrust_data(:,2), t, 'linear', 'extrap');
 
 Rocket.mass = @(t) max(mass_wet - (mass_wet - mass_dry) * min(t, Rocket.burntime) / Rocket.burntime, mass_dry);
-
 
 %% Import drag coeff data for body(on and off)
 
@@ -152,8 +151,9 @@ while Rocket.state ~= "descent"  && t(end) < 100
         
         % Calculate the controller output
         output = controller.calculate(setpoint, predicted_apogee);
+
         % Change airbrake position
-        Rocket.Airbrake = Rocket.Airbrake.updateMotorVelocity(output);
+        Rocket.Airbrake.desiredVelocity = output;
     end
 
     

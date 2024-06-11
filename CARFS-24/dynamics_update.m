@@ -28,10 +28,10 @@ function [Rocket] = dynamics_update(Rocket, t, dt)
     cd_times_A = Rocket.Airbrake.getCdTimesA(Ma);
     Rocket.Airbrake.Fd = -0.5 * cd_times_A * rho * Rocket.x(end,2)^2;
     
-
     F_thrust = Rocket.thrust(t);
     %Calculate net force acting on the rocket
     F = F_thrust + F_drag_body + Rocket.Airbrake.Fd;
+
 
     %Calculate net acceleration
     u = g + F/Rocket.mass(t);
@@ -41,5 +41,6 @@ function [Rocket] = dynamics_update(Rocket, t, dt)
     a = u;
     
     Rocket.x(end+1,:) = [s,v,a];
+    %Rocket.x(end,:) = Rocket.x(end,:) + [0.5*randn(1), 0.5*randn(1) , 0.5*randn(1)]; %Generate noisy measurements based on the rocekts states
 end
 
