@@ -45,7 +45,7 @@ classdef Airbrake
             obj.A = (57 * 10^(-3) * 165*10^(-3));   % Reference area, at 90 degrees  
 
             %Motor properties - https://www.nanotec.com/eu/en/products/1333-sc4118l1804-eno05k#dimensions
-            obj.maxAccleration = 50/60; %RPMPS;
+            obj.maxAccleration = 200/60; %RPMPS;
             obj.minAccleration = -obj.maxAccleration;
             obj.maxVelocity = 1000/60;%RPM for motor
             obj.minVelocity = -obj.maxVelocity;%RPS for motor
@@ -59,7 +59,7 @@ classdef Airbrake
             obj.minP = sqrt(obj.L1^2 - 2*(obj.L1 * sin(deg2rad(obj.maxAngle)))^2 + obj.L2^2);
             obj.P = sqrt(obj.L1^2 - 2*(obj.L1 * sin(deg2rad(obj.angle)))^2 + obj.L2^2); %mm, Initial crucifix position
             obj.pitch = 6/1000;%mm, Pitch of lead screw threads
-            obj.gearRatio = 1;%x:1        
+            obj.gearRatio = 100;%x:1        
         end
         
         
@@ -75,8 +75,7 @@ classdef Airbrake
         % Method to update the crucifix and airbrake position
         function obj = updateAirbrakes(obj, dt)
             
-       
-
+            % Ensure that the control output is realisable
             if (obj.desiredVelocity - obj.velocity)/dt > obj.maxAccleration
                 obj.velocity = obj.velocity + dt * obj.maxAccleration;
             

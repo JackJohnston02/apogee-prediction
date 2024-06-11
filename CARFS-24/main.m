@@ -124,6 +124,8 @@ Rocket.x(1,3) = -9.81;
 
 Rocket.state = "pad";
 Rocket.Airbrake = Airbrake();
+
+airbrake_velocity_log = [Rocket.Airbrake.velocity];
 airbrake_position_log = [Rocket.Airbrake.P];
 airbrake_angle_log = [Rocket.Airbrake.angle];
 error_log = [0];
@@ -156,7 +158,7 @@ while Rocket.state ~= "descent"  && t(end) < 100
         Rocket.Airbrake.desiredVelocity = output;
     end
 
-    
+    airbrake_velocity_log = [airbrake_velocity_log, Rocket.Airbrake.velocity];
     airbrake_position_log = [airbrake_position_log, Rocket.Airbrake.P];
     airbrake_angle_log = [airbrake_angle_log,Rocket.Airbrake.angle];
     error_log = [error_log, predicted_apogee - targetApogee];

@@ -48,23 +48,37 @@ if plot_control_output == true
     set(control_output_fig, 'WindowState', 'maximized');
     set(control_output_fig, 'Name', 'Rocket Dynamics', 'NumberTitle', 'off');
 
-    subplot(4, 1, 1);  % create a subplot
-    plot(t, -airbrake_position_log * 1000, 'LineWidth', 2);
+    subplot(5, 1, 1);  % create a subplot
+    plot(t, airbrake_velocity_log*60, 'LineWidth', 2);
+    yline(Rocket.Airbrake.maxVelocity*60, "red");
+    yline(Rocket.Airbrake.minVelocity*60, "red");
+    title('Stepper Motor Velocity vs Time');
+    xlabel('Time (s)');
+    ylabel('Velocity (RPM)');
+    xlim([0,t(end)])
+    grid on;  % add a grid
+
+    subplot(5, 1, 2);  % create a subplot
+    plot(t, (-airbrake_position_log + Rocket.Airbrake.maxP) * 1000, 'LineWidth', 2);
+    yline((-Rocket.Airbrake.maxP + Rocket.Airbrake.maxP) * 1000, "red");
+    yline((-Rocket.Airbrake.minP + Rocket.Airbrake.maxP) * 1000, "red");
     title('Crucifix position vs Time');
     xlabel('Time (s)');
     ylabel('P (m)');
     xlim([0,t(end)])
     grid on;  % add a grid
 
-    subplot(4, 1, 2);  % create a subplot
+    subplot(5, 1, 3);  % create a subplot
     plot(t, airbrake_angle_log, 'LineWidth', 2);
-    title('Airbrake Position vs Time');
+    yline(0, "red");
+    yline(Rocket.Airbrake.maxAngle, "red");
+    title('Airbrake Angle vs Time');
     xlabel('Time (s)');
     ylabel('Degrees');
     xlim([0,t(end)])
     grid on;  % add a grid
 
-    subplot(4, 1, 3);  % create a subplot
+    subplot(5, 1, 4);  % create a subplot
     plot(t, error_log, 'LineWidth', 2);
     title('Error vs Time');
     xlabel('Time (s)');
@@ -72,7 +86,7 @@ if plot_control_output == true
     xlim([0,t(end)])
     grid on;  % add a grid
 
-    subplot(4, 1, 4);  % create a subplot
+    subplot(5, 1, 5);  % create a subplot
     plot(t, error_log, 'LineWidth', 2);
     title('Zoomed Error vs Time');
     xlabel('Time (s)');
