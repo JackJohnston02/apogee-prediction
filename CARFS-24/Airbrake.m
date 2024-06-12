@@ -59,7 +59,7 @@ classdef Airbrake
             obj.minP = sqrt(obj.L1^2 - 2*(obj.L1 * sin(deg2rad(obj.maxAngle)))^2 + obj.L2^2);
             obj.P = sqrt(obj.L1^2 - 2*(obj.L1 * sin(deg2rad(obj.angle)))^2 + obj.L2^2); %mm, Initial crucifix position
             obj.pitch = 6/1000;%mm, Pitch of lead screw threads
-            obj.gearRatio = 100;%x:1        
+            obj.gearRatio = 5;%x:1        
         end
         
         

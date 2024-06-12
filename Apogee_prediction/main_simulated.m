@@ -12,6 +12,8 @@ vel = data.VZ;
 alt_std = 1; % 
 acc_std = 1; % 160e-6 for BMI088 
 
+APA = APA_Single_Particle(0.01);
+
 for i = 1:length(data.Z)
     alt(i) = data.Z(i) + alt_std * randn;
     acc(i) = data.Az(i) + acc_std * randn;
@@ -133,7 +135,12 @@ while ~landed && ~apogee_detected && k < length(timestamp)
     
         fpcount = fpcount + 1;
    if motor_burntout && fpcount > 10 && t >  1 + burnout_time && ~apogee_detected
-        [predicted_apogee_altitude, predicted_apogee_sigma] =  FP_Model_UKF(x, P, dt).getApogee();
+        %% Single particle
+        predicted_apogee_altitude = APA.getApogee(x);
+        predicted_apogee_sigma = 0;
+
+        %% Other
+        %[predicted_apogee_altitude, predicted_apogee_sigma] =  FP_Model_UKF(x, P, dt).getApogee();
         %[predicted_apogee_altitude, predicted_apogee_sigma] = FP_Model_Particles(x, P, dt);
         predicted_apogee_sigmas = [predicted_apogee_sigmas, predicted_apogee_sigma];
         predicted_apogee_altitudes = [predicted_apogee_altitudes, predicted_apogee_altitude];
