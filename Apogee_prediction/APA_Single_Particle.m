@@ -1,14 +1,16 @@
 classdef APA_Single_Particle
     properties
         dt;
+        log_apogee
     end
 
     methods
         function obj = APA_Single_Particle(dt)
             obj.dt = dt;
+            obj.log_apogee = [];
         end
 
-        function predictedApogee = getApogee(obj, x0) % Add obj as the first parameter
+        function [obj, predictedApogee] = getApogee(obj, t0, x0) % Add obj as the first parameter
             % x0 is a vector containing the vertical components of
             % position, velocity, and acceleration.
             % Should be Up +ve
@@ -20,7 +22,7 @@ classdef APA_Single_Particle
             rho = obj.get_density(x); % Get current estimate for density based on altitude
             g = obj.get_gravity(x); % Get current estimate for gravity based on altitude
 
-            Cb = (rho * xdot^2) / (2 * (xddot - g)); % Calculate the ballistic coefficient of the rocket
+            Cb = (rho * xdot^2) / (2 * (xddot + g)); % Calculate the ballistic coefficient of the rocket
 
             while xdot > 0 && x > 0 && x < 5000
                 % Propagate each particle through the prediction algorithm
@@ -32,9 +34,13 @@ classdef APA_Single_Particle
                 xddot = g + ((rho * xdot^2)/(2 * Cb)); % Gravity + acceleration due to drag
                 xdot = xdot + obj.dt * xddot; % Velocity = Velocity + dt * acceleration
                 x = x + obj.dt * xdot; % Altitude = altitude + dt * velocity
+
+                
             end
 
             predictedApogee = x;
+            obj.log_apogee = [obj.log_apogee, [t0, x]'];
+            
         end
 
         function rho = get_density(obj, h) % Add obj as the first parameter
@@ -45,7 +51,7 @@ classdef APA_Single_Particle
             p_0 = 101325; % Standard sea level atmospheric pressure
             M = 0.0289652; % molar mass of dry air
             R = 8.31445; % ideal gas constant
-            T_0 = 288.15; % Standard sea level temperature
+            T_0 = 288.15; % Standard sea level temperature 288.15
             L = 0.0065; % temperature lapse rate
             g = obj.get_gravity(h);
 
