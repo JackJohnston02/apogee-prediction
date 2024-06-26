@@ -98,12 +98,12 @@ classdef Observer_UKF
                 x(2) = x(2) + x(3) * dt;
                 
 
-                if x(1) > 590 % Transition to free coast
+                if x(1) > 400 % Transition to free coast
                     % We require an incrimental change in x(3) due to dt,
                     % for proper state tracking  
-                    disp("observer active")
-                    x(4) = x(4);%rho * x(2)^2 / (2 * (abs(x(3)) - 9.81));
+                    disp("observer active")          
                     x(3) = -9.81 - (rho * (x(2)^2))/(2 * x(4));
+                    x(4) = x(4);%rho * x(2)^2 / (2 * (abs(x(3)) - 9.81));
 
                 else 
                     x(3) = x(3);

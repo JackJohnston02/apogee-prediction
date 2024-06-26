@@ -18,7 +18,7 @@ dt = 0.01; % Time step
 data_struct.imu_accZ = data_struct.imu_accZ - 9.81;
 
 % Initial state vector [altitude; velocity; acceleration; ballistic coefficient]
-x_init = [data_struct.baro_altitude(1); 0; 0; 200];
+x_init = [data_struct.baro_altitude(1); 0; 0; 1800];
 
 % Estimation error covariance matrix
 P_init = eye(4);
@@ -26,10 +26,10 @@ P_init = eye(4);
 % Static process noise covariance matrix (to be updated dynamically)
 
 % For ballisitic coefficient observer
-Q = 1* [(dt^5)/20, (dt^4)/8, (dt^3)/6, 0;
-        (dt^4)/8, (dt^3)/3, (dt^2)/2, 0;
-       (dt^3)/6, (dt^2)/2, dt, 1e-12;
-        0, 0, 1e-12, 1e-6];
+Q = 1e-2* [(dt^5)/20, (dt^4)/8, (dt^3)/6, 0;
+        (dt^4)/8, (dt^3)/3, (dt^2)/2, 1e-32;
+       (dt^3)/6, (dt^2)/2, dt, 1e-16;
+        0, 0, 1e-16, 1e-15];
 
 
 % Measurement noise covariance matrices
@@ -124,7 +124,7 @@ hold on;
 yline(1510);
 grid("on");
 yline(1500);
-xlim([9,19]);
+xlim([9.14,18]);
 %ylim([0,1500]);
 xlabel('Time (s)');
 ylabel('Ballistic Coefficient');
