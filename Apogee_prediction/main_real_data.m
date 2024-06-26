@@ -1,6 +1,7 @@
-% Load data
+% Load dat
 filename = 'data/real/owen.csv';
 data = readtable(filename);
+data = data(1:2000, :);
 column_headers = data.Properties.VariableNames;
 data_struct = struct();
 
@@ -11,104 +12,89 @@ for i = 1:length(column_headers)
     data_struct.(column_name) = column_data;
 end
 
-% Initialize the timestamps and convert to seconds
-data_struct.timestamp = (data_struct.timestamp - min(data_struct.timestamp))/1000;
+dt = 0.01; % Time step
 
-APA = APA_Single_Particle(0.01);
+% Subtract gravity
+data_struct.imu_accZ = data_struct.imu_accZ - 9.81;
 
-
-%% Initialize the Kalman Filter
-% Initial state vector [altitude; velocity; acceleration]
-x = [data_struct.baro_altitude(1); 0; 0];
+% Initial state vector [altitude; velocity; acceleration; ballistic coefficient]
+x_init = [data_struct.baro_altitude(1); 0; 0; 200];
 
 % Estimation error covariance matrix
-P = eye(3); % Initial estimation error covariance
+P_init = eye(4);
 
-% Observation model
-H = [1 0 0; 0 0 1]; % Only altitude and acceleration are observed
+% Static process noise covariance matrix (to be updated dynamically)
 
-% Static process noise covariance matrix
-Q = [1 0 0;
-     0 1 0;
-     0 0 1];
+% For ballisitic coefficient observer
+Q = 1* [(dt^5)/20, (dt^4)/8, (dt^3)/6, 0;
+        (dt^4)/8, (dt^3)/3, (dt^2)/2, 0;
+       (dt^3)/6, (dt^2)/2, dt, 1e-12;
+        0, 0, 1e-12, 1e-6];
 
-% Measurement noise covariance matrix
-R = diag([0.1, 1]);
+
+% Measurement noise covariance matrices
+R_b = 1e-3; % Measurement noise covariance for barometer
+R_a = 1e-3; % Measurement noise covariance for accelerometer
+
+% Initialize the timestamps and convert to seconds
+data_struct.timestamp = (data_struct.timestamp - min(data_struct.timestamp)) / 1000;
+
+% Create UKF object
+ukf = Observer_UKF(x_init, P_init, Q, R_a, R_b, dt);
 
 % Initialize arrays for storing estimates
 x_est = [];
 densities = [];
 Cbs = [];
 
-% Control input (none in this case)
-B = [0 0 1]';
-u = 0;
-uout = [];
-
 % Initialize time and loop counter
 k = 1;
 t = 0;
 times = [];
-dt = 0.01; % Time step
 
-%% Loop until landed or apogee detected or end of data
+z_b = data_struct.baro_altitude(1);
+z_a = data_struct.imu_accZ(1);
+
+rho = 1.225;
+
+% Loop until landed or apogee detected or end of data
 for i = 1:length(data_struct.timestamp)
     t = t + dt; % Increment time
     times = [times, t]; % Store current time
 
-    % Dynamic process noise covariance matrix
-    Q = 1*[(dt^5)/20, (dt^4)/8, (dt^3)/6;
-           (dt^4)/8, (dt^3)/3, (dt^2)/2;
-           (dt^3)/6, (dt^2)/2, dt];
-
-    % State transition matrix
-    A = [1 dt 0.5*dt^2;
-         0 1 dt;
-         0 0 1];
 
     % Predict step
-    x = A*x + B*u; % State prediction
-    P = A*P*A' + Q; % Covariance prediction
+    [ukf, predicted_state, predicted_covariance] = ukf.predict();
 
     % Update step if new data is available
     if k <= length(data_struct.timestamp) && t >= data_struct.timestamp(k)
-        z = [data_struct.baro_altitude(k); data_struct.imu_accZ(k)]; % Measurement vector
-        K = P*H' / (H*P*H' + R); % Compute Kalman gain
-        x = x + K * (z - H*x); % State update
-        P = (eye(3) - K*H) * P; % Covariance update
+        % Check if it's time for a barometer update
+        if data_struct.baro_altitude(k) ~= z_b
+            z_b = data_struct.baro_altitude(k); % Barometer measurement
+            [ukf, updated_state, updated_covariance] = ukf.updateBarometer(z_b); % Update state with barometer measurement
+        end
+
+        % Check if it's time for an accelerometer update
+        if data_struct.imu_accZ(k) ~= z_a
+            z_a = data_struct.imu_accZ(k); % Accelerometer measurement
+            [ukf, updated_state, updated_covariance] = ukf.updateAccelerometer(z_a); % Update state with accelerometer measurement
+        end
+
         k = k + 1; % Increment measurement index
     end
 
     % Record the estimated states
-    x_est(:, end + 1) = x;
+    x_est(:, end + 1) = ukf.state;
 
-    % Calculate ballistic coefficient
-    rho = get_density(x(1));
-    g = get_gravity(x(1));
-    Cbs(end+1) = (rho * x(2)^2) / (2 * (-x(3)));
-    
-    if x(3) < 0 
-        [APA, predicted_apogee] = APA.getApogee(t,x);
-    end
+
 end
-
-%% Post analysis
-figure;
-subplot(1,1,1);
-hold on;
-plot(APA.log_apogee(1,:), APA.log_apogee(2,:), 'b', 'LineWidth', 2);
-plot(data_struct.timestamp, data_struct.baro_altitude)
-xlabel('Time (s)');
-ylabel('Altitude (m)');
-title('Estimated Altitude vs Actual Altitude');
-legend('Estimated Altitude', 'Actual Altitude');
 
 % Plotting states
 figure;
 subplot(3,1,1);
-plot(times, x_est(1,:), 'b', 'LineWidth', 2);
+plot(times, x_est(1,:), 'b', 'LineWidth', 0.5);
 hold on;
-plot(data_struct.timestamp, data_struct.baro_altitude, 'r', 'LineWidth', 2);
+scatter(data_struct.timestamp, data_struct.baro_altitude, 4, "LineWidth", 0.1);
 xlabel('Time (s)');
 ylabel('Altitude (m)');
 title('Estimated Altitude vs Actual Altitude');
@@ -123,9 +109,9 @@ title('Estimated Velocity');
 legend('Estimated Velocity');
 
 subplot(3,1,3);
-plot(times, x_est(3,:), 'b', 'LineWidth', 2);
+plot(times, x_est(3,:), 'b', 'LineWidth', 0.5);
 hold on;
-plot(data_struct.timestamp, data_struct.imu_accZ, 'r', 'LineWidth', 2);
+scatter(data_struct.timestamp, data_struct.imu_accZ, 4, "LineWidth", 0.1);
 xlabel('Time (s)');
 ylabel('Acceleration (m/s^2)');
 title('Estimated Acceleration vs Actual Acceleration');
@@ -133,59 +119,14 @@ legend('Estimated Acceleration', 'Actual Acceleration');
 
 % Plotting the ballistic coefficient
 figure;
-
-xlimmin = 9.5;
-xlimmax = 15.5;
-
-plot(times, Cbs, 'r', 'LineWidth', 2);
+plot(times, x_est(4,:), 'b', 'LineWidth', 2);
 hold on;
-mmaResult = forward_reverse_moving_average(Cbs, 100);
-plot(times, mmaResult, 'b', 'LineWidth', 2);
-xlim([xlimmin, xlimmax]);
-ylim([0, 2000]);
-
+yline(1510);
+grid("on");
+yline(1500);
+xlim([9,19]);
+%ylim([0,1500]);
 xlabel('Time (s)');
 ylabel('Ballistic Coefficient');
 title('Ballistic Coefficient Over Time');
 legend('Estimated Ballistic Coefficient', 'Moving Average');
-
-%% Function for density
-function rho = get_density(h)
-    % Returns atmospheric density as a function of altitude
-    % Accurate up to 11km
-    % https://en.wikipedia.org/wiki/Density_of_air
-
-    p_0 = 101325; % Standard sea level atmospheric pressure
-    M = 0.0289652; % molar mass of dry air
-    R = 8.31445; % ideal gas constant
-    T_0 = 288.15; % Standard sea level temperature
-    L = 0.0065; % temperature lapse rate
-    g = get_gravity(h);
-
-    rho = (p_0 * M)/(R * T_0) * (1 - (L * h)/(T_0))^(((-g * M) / (R* L)) - 1); % -g used as g is -ve by default
-end
-
-%% Function for gravity
-function g = get_gravity(h)
-    % Returns gravity as a function of altitude
-    % Approximates the Earth's gravity assumes a perfect sphere
-    
-    g_0 = -9.80665; % Standard gravity
-    R_e = 6371000; % Earth radius
-
-    g = g_0 * (R_e / (R_e + h))^2;
-end
-
-%% Moving Average Function
-function result = forward_reverse_moving_average(data, window_size)
-    % Apply forward moving average
-    forward_avg = movmean(data, window_size);
-    
-    % Apply reverse moving average
-    reversed_data = fliplr(data);
-    reverse_avg = movmean(reversed_data, window_size);
-    reverse_avg = fliplr(reverse_avg);
-    
-    % Average both results
-    result = (forward_avg + reverse_avg) / 2;
-end
