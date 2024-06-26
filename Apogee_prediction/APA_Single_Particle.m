@@ -2,12 +2,14 @@ classdef APA_Single_Particle
     properties
         dt;
         log_apogee
+        log_Cb
     end
 
     methods
         function obj = APA_Single_Particle(dt)
             obj.dt = dt;
             obj.log_apogee = [];
+            obj.log_Cb = [];
         end
 
         function [obj, predictedApogee] = getApogee(obj, t0, x0) % Add obj as the first parameter
@@ -22,8 +24,8 @@ classdef APA_Single_Particle
             rho = obj.get_density(x); % Get current estimate for density based on altitude
             g = obj.get_gravity(x); % Get current estimate for gravity based on altitude
 
-            Cb = (rho * xdot^2) / (2 * (xddot + g)); % Calculate the ballistic coefficient of the rocket
-
+            %Cb = (rho * xdot^2) / (2 * (abs(xddot) + g)); % Calculate the ballistic coefficient of the rocket
+            Cb = x0(4);
             while xdot > 0 && x > 0 && x < 5000
                 % Propagate each particle through the prediction algorithm
                 % This is a constant Cb model
@@ -31,7 +33,7 @@ classdef APA_Single_Particle
                 rho = obj.get_density(x);
                 g = obj.get_gravity(x);
 
-                xddot = g + ((rho * xdot^2)/(2 * Cb)); % Gravity + acceleration due to drag
+                xddot = g - ((rho * xdot^2)/(2 * Cb)); % Gravity + acceleration due to drag
                 xdot = xdot + obj.dt * xddot; % Velocity = Velocity + dt * acceleration
                 x = x + obj.dt * xdot; % Altitude = altitude + dt * velocity
 
@@ -39,6 +41,8 @@ classdef APA_Single_Particle
             end
 
             predictedApogee = x;
+
+            obj.log_Cb = [obj.log_Cb, [t0, Cb]'];
             obj.log_apogee = [obj.log_apogee, [t0, x]'];
             
         end

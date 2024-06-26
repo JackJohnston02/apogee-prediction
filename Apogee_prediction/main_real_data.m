@@ -18,7 +18,7 @@ dt = 0.01; % Time step
 data_struct.imu_accZ = data_struct.imu_accZ - 9.81;
 
 % Initial state vector [altitude; velocity; acceleration; ballistic coefficient]
-x_init = [data_struct.baro_altitude(1); 0; 0; 1800];
+x_init = [data_struct.baro_altitude(1); 0; 0; 0];
 
 % Estimation error covariance matrix
 P_init = eye(4);
@@ -41,6 +41,7 @@ data_struct.timestamp = (data_struct.timestamp - min(data_struct.timestamp)) / 1
 
 % Create UKF object
 ukf = Observer_UKF(x_init, P_init, Q, R_a, R_b, dt);
+apa = APA_Single_Particle(dt);
 
 % Initialize arrays for storing estimates
 x_est = [];
@@ -56,7 +57,7 @@ z_b = data_struct.baro_altitude(1);
 z_a = data_struct.imu_accZ(1);
 
 rho = 1.225;
-
+apogees = [];
 % Loop until landed or apogee detected or end of data
 for i = 1:length(data_struct.timestamp)
     t = t + dt; % Increment time
@@ -85,7 +86,10 @@ for i = 1:length(data_struct.timestamp)
 
     % Record the estimated states
     x_est(:, end + 1) = ukf.state;
-
+    
+    if ukf.state(1) > 400 && ukf.state(2) > 0
+        [apa,apogee] = apa.getApogee(t, ukf.state);
+    end
 
 end
 
@@ -119,8 +123,10 @@ legend('Estimated Acceleration', 'Actual Acceleration');
 
 % Plotting the ballistic coefficient
 figure;
-plot(times, x_est(4,:), 'b', 'LineWidth', 2);
 hold on;
+
+scatter(apa.log_Cb(1,:), apa.log_Cb(2,:), 4, "red", "LineWidth", 1)
+plot(times, x_est(4,:), 'b', 'LineWidth', 0.5);
 yline(1510);
 grid("on");
 yline(1500);
@@ -129,4 +135,14 @@ xlim([9.14,18]);
 xlabel('Time (s)');
 ylabel('Ballistic Coefficient');
 title('Ballistic Coefficient Over Time');
-legend('Estimated Ballistic Coefficient', 'Moving Average');
+legend('Calculated', 'Observed');
+hold off
+
+
+figure;
+hold on;
+title('Predicted Apogee Over Time');
+plot(apa.log_apogee(1,:), apa.log_apogee(2,:))
+plot(times, x_est(1,:))
+hold off
+

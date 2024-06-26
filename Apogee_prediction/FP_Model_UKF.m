@@ -7,10 +7,7 @@ classdef FP_Model_UKF
     end
     
     methods
-        function obj = FP_Model_UKF(x0, P0, dt)
-            obj.x = x0;
-            obj.P = P0;
-            obj.Q = 0;
+        function obj = FP_Model_UKF(dt)
             obj.dt = dt;
         end
 
@@ -102,7 +99,10 @@ classdef FP_Model_UKF
             end
         end
 
-        function [predicted_apogee_altitude, predicted_apogee_sigma] = getApogee(obj)
+        function [predicted_apogee_altitude, predicted_apogee_sigma] = getApogee(obj, x0, P0)
+            obj.x = x0;
+            obj.P = P0;
+
             [xPred, PPred] = obj.predict();
             predicted_apogee_altitude = xPred(1);
             predicted_apogee_sigma = sqrt(PPred(1, 1));
