@@ -14,7 +14,7 @@ rng('default');
 
 %% OPTIONS
 options.plotData = true;
-options.addGravityToAccelerationData = true;
+options.addGravityToAccelerationData = false;
 
 % Load RocketPy Simulation Data
 loadRocketPyData;
@@ -37,9 +37,9 @@ P0 = blkdiag(0.1*eye(3),0.01*eye(3),1*eye(3),0.001^2*eye(3),0.0001^2*eye(3));
 settingsKF.useGNSSAltitude = true;
 settingsKF.propagateWithAccelerometer = true;
 %% USING ACCELEROMETER UPDATE CAUSES ISSUES
+settingsKF.useAccUpdate = true;
 settingsKF.useAccUpdate = false;
-settingsKF.useAccUpdate = false;
-settingsApPred.usePredict = true;
+settingsApPred.usePredict = false;
 settingsApPred.numParticles = 1;
 
 sigma.sigma_acc = sensor.imu.noiseSTD;
@@ -50,13 +50,13 @@ sigma.sigma_bias = sensor.gyro.biasNoiseSTD;
 sigma.sigma_gnss = sensor.gnss.noiseSTD;
 sigma.sigma_mag = sensor.mag.noiseSTD;
 
-Qgyro = blkdiag(eye(3)*sensor.gyro.noiseSTD);
-Qgyrob = blkdiag(eye(3)*sensor.gyro.biasNoiseSTD);
-Qacc = blkdiag(eye(3)*sensor.imu.noiseSTD);
-Qaccb = blkdiag(eye(3)*sensor.imu.biasNoiseSTD);
-Rgnss = diag(sensor.gnss.noiseSTD);
-Ralt = blkdiag(sensor.alt.noiseSTD);
-Rmag = blkdiag(eye(3)*sensor.mag.noiseSTD);
+Qgyro = blkdiag(eye(3)*sensor.gyro.noiseSTD^2);
+Qgyrob = blkdiag(eye(3)*sensor.gyro.biasNoiseSTD^2);
+Qacc = blkdiag(eye(3)*sensor.imu.noiseSTD^2);
+Qaccb = blkdiag(eye(3)*sensor.imu.biasNoiseSTD^2);
+Rgnss = diag(sensor.gnss.noiseSTD .* sensor.gnss.noiseSTD);
+Ralt = blkdiag(sensor.alt.noiseSTD^2);
+Rmag = blkdiag(eye(3)*sensor.mag.noiseSTD^2);
 
 
 % Instatitate Navigation Algorithm
@@ -76,7 +76,7 @@ for i = 1:sim.numTimeSteps
     %% FEED IN TRUE DATA FOR APOGEE PREDICTION
     nav.trueU = [sim.x_enu(i,3); sim.v_enu(i,3); sim.a_enu(i,3)];
     if i >= 298
-        testAp(1,i) = FP_Model(nav.trueU',eye(3),[],0.01);
+        %testAp(1,i) = FP_Model(nav.trueU',eye(3),[],0.01);
     else
         testAp(1,i) = 0;
     end
@@ -98,7 +98,7 @@ end
 for i = 1:sim.numTimeSteps
     x_estNED(i,:) = Xest{i}(1:3,5); 
     v_estNED(i,:) = Xest{i}(1:3,4); 
-    % a_estNED(i,:) = [xestT(3,i) xestT(6,i) xestT(9,i)];
+    %a_estNED(i,:) = [xestT(3,i) xestT(6,i) xestT(9,i)];
 end
 
 
