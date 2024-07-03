@@ -2,6 +2,8 @@
 plot_dynamics = true;
 plot_control_output = true;
 animation_airbrake_position = true; 
+Serial_stream = Serial_streamer("COM8", 9600, false);
+
 
 
 %% Dynamics output
@@ -122,6 +124,10 @@ if animation_airbrake_position == true
     
     % Animate the rectangle
     for i = 1:length(t)-1
+        % send velocity data
+        Serial_stream.startStreaming(airbrake_velocity_log(i) * 60)
+
+
         % Start a timer
         tic;
         
@@ -160,5 +166,6 @@ if animation_airbrake_position == true
             pause(pauseTime);
         end
     end
+    Serial_stream.delete()
 end
 

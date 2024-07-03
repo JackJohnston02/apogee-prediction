@@ -45,9 +45,9 @@ classdef Airbrake
             obj.A = (57 * 10^(-3) * 165*10^(-3));   % Reference area, at 90 degrees  
 
             %Motor properties - https://www.nanotec.com/eu/en/products/1333-sc4118l1804-eno05k#dimensions
-            obj.maxAccleration = 200/60; %RPMPS;
+            obj.maxAccleration = 100/60; %RPMPS;
             obj.minAccleration = -obj.maxAccleration;
-            obj.maxVelocity = 1000/60;%RPM for motor
+            obj.maxVelocity = 100/60;%RPM for motor
             obj.minVelocity = -obj.maxVelocity;%RPS for motor
             obj.desiredVelocity = 0;
             obj.velocity = 0/60;%RPS
@@ -94,18 +94,19 @@ classdef Airbrake
                     obj.velocity = obj.minVelocity; 
             end
             
-
             %update crucifix position
             linVel = obj.pitch * obj.velocity/obj.gearRatio; %velocity is pitch * RPS
             obj.P = obj.P + linVel * dt;
             %Check P for the limits
             if obj.P > obj.maxP
+                obj.velocity = 0.01;
                 %disp("maxxed out P " + obj.P );
                 obj.P = obj.maxP;
             end
             if obj.P < obj.minP
                 %disp("mined out P " + obj.P);
                 obj.P = obj.minP;
+                obj.velocity = 0.01;
             end
             %update flap angle
             obj.angle = rad2deg(asin((1/obj.L1) * (sqrt((obj.L1^2 + obj.L2^2 - obj.P^2)/(2)))));

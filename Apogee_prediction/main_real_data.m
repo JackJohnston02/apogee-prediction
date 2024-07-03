@@ -1,7 +1,7 @@
 % Load dat
 filename = 'data/real/owen.csv';
 data = readtable(filename);
-data = data(1:2000, :);
+data = data(1:end, :);
 column_headers = data.Properties.VariableNames;
 data_struct = struct();
 
@@ -15,7 +15,9 @@ end
 dt = 0.01; % Time step
 
 % Subtract gravity
-data_struct.imu_accZ = data_struct.imu_accZ - 9.81;
+
+data_struct.imu_acc = [data_struct.imu_accX, data_struct.imu_accY, data_struct.imu_accZ];
+
 
 % Initial state vector [altitude; velocity; acceleration; ballistic coefficient]
 x_init = [data_struct.baro_altitude(1); 0; 0; 0];
@@ -54,7 +56,7 @@ t = 0;
 times = [];
 
 z_b = data_struct.baro_altitude(1);
-z_a = data_struct.imu_accZ(1);
+z_a = data_struct.imu_acc(1,:);
 
 rho = 1.225;
 apogees = [];
@@ -76,8 +78,8 @@ for i = 1:length(data_struct.timestamp)
         end
 
         % Check if it's time for an accelerometer update
-        if data_struct.imu_accZ(k) ~= z_a
-            z_a = data_struct.imu_accZ(k); % Accelerometer measurement
+        if data_struct.imu_acc(k,:) ~= z_a
+            z_a = data_struct.imu_acc(k,:); % Accelerometer measurement
             [ukf, updated_state, updated_covariance] = ukf.updateAccelerometer(z_a); % Update state with accelerometer measurement
         end
 
@@ -130,6 +132,7 @@ plot(times, x_est(4,:), 'b', 'LineWidth', 0.5);
 yline(1510);
 grid("on");
 yline(1500);
+ylim([-2000, 2000]);
 xlim([9.14,18]);
 %ylim([0,1500]);
 xlabel('Time (s)');
@@ -144,5 +147,7 @@ hold on;
 title('Predicted Apogee Over Time');
 plot(apa.log_apogee(1,:), apa.log_apogee(2,:))
 plot(times, x_est(1,:))
+grid on;
+grid minor;
 hold off
 

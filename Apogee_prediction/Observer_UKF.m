@@ -35,6 +35,8 @@ classdef Observer_UKF
         end
 
         function [obj, updated_state, updated_covariance] = updateAccelerometer(obj, measurement)
+            % Pre-processing
+            measurement = measurement(3)- 9.81;
             % UKF Update step for accelerometer
             [sigma_points, weights_mean, weights_cov] = obj.generateSigmaPoints();
             predicted_measurement_sigma_points = obj.measurementModelAccelerometer(sigma_points);
@@ -98,7 +100,7 @@ classdef Observer_UKF
                 x(2) = x(2) + x(3) * dt;
                 
 
-                if x(1) > 400 % Transition to free coast
+                if x(1) > 400 && x(2) > 0 % Transition to free coast
                     % We require an incrimental change in x(3) due to dt,
                     % for proper state tracking         
                     x(3) = -9.81 - (rho * (x(2)^2))/(2 * x(4));

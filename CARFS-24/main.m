@@ -16,7 +16,7 @@
 
 %% %%%*********MAINSCRIPT*********%%%
 clc
-clear 
+clear all;
 
 %% Simulation Settings
 rocket_file_name = "Regulus";%File containing rocket data
