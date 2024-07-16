@@ -52,12 +52,6 @@ Cb = x_est(4, :);
 Cb_var = p_est(4, :);  % Assuming these are variance values
 Cb_std = sqrt(Cb_var); % Calculate standard deviation
 
-% Display some values for debugging
-disp('Variance values:');
-disp(Cb_var(1:10)); % Display the first 10 variance values for checking
-disp('Standard deviation values:');
-disp(Cb_std(1:10)); % Display the first 10 standard deviation values for checking
-
 % Calculate bounds for 1, 2, and 3 standard deviations
 upper1 = Cb + Cb_std;
 lower1 = Cb - Cb_std;
