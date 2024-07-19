@@ -18,9 +18,9 @@ function [Rocket] = dynamics_update(Rocket, t, dt)
 %% Get body drag
 
     if Rocket.state == "burning"
-        Cd = Rocket.dragcoef_off(Ma);
-    else
         Cd = Rocket.dragcoef_on(Ma);
+    else
+        Cd = Rocket.dragcoef_off(Ma);
     end
     F_drag_body = -0.5 * Cd * Rocket.area * rho * Rocket.x(end,2)^2;
 
@@ -41,6 +41,6 @@ function [Rocket] = dynamics_update(Rocket, t, dt)
     a = u;
     
     Rocket.x(end+1,:) = [s,v,a];
-    %Rocket.x(end,:) = Rocket.x(end,:) + [0.5*randn(1), 0.5*randn(1) , 0.5*randn(1)]; %Generate noisy measurements based on the rocekts states
+    %Rocket.x(end,:) = Rocket.x(end,:) + [0.5*randn(1), 0.5*randn(1) , 0.5*randn(1)]; %Generate disturbances based on the rocekts states
 end
 
