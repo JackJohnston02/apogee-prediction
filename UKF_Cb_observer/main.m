@@ -29,7 +29,7 @@ P_init = eye(4);
 % Static process noise covariance matrix (to be updated dynamically)
 
 % For ballisitic coefficient observer
-Q = 1e5*[(dt^5)/20, (dt^4)/8, (dt^3)/6, 0;
+Q = 1e1*[(dt^5)/20, (dt^4)/8, (dt^3)/6, 0;
         (dt^4)/8, (dt^3)/3, (dt^2)/2, 1e-32;
        (dt^3)/6, (dt^2)/2, dt, 1e-16;
         0, 0, 1e-16, 1e-15];
