@@ -21,10 +21,10 @@ dt = 0.01; % Time step
 data_struct.imu_acc = [data_struct.imu_accX, data_struct.imu_accY, data_struct.imu_accZ];
 
 % Initial state vector [altitude; velocity; acceleration; ballistic coefficient]
-x_init = [data_struct.baro_altitude(1); 0; 0; 0];
+x_init = [data_struct.baro_altitude(1); 1; 1];
 
 % Estimation error covariance matrix
-P_init = eye(4);
+P_init = eye(3);
 
 % Static process noise covariance matrix
 Q = 1e1*[(dt^5)/20, (dt^4)/8, (dt^3)/6, 0;
@@ -64,7 +64,7 @@ for i = 1:length(data_struct.timestamp)
     times = [times, t]; % Store current time
 
     % Predict step
-    [ekf, predicted_state, predicted_covariance] = ekf.predict();
+    [ekf, predicted_state, predicted_covariance] = ekf.predict(t);
 
     % Update step if new data is available
     if k <= length(data_struct.timestamp) && t >= data_struct.timestamp(k)
@@ -84,9 +84,9 @@ for i = 1:length(data_struct.timestamp)
     end
 
     % Record the estimated states
-    x_est(:, end + 1) = ekf.state;
+    x_est(:, end + 1) = ekf.x;
     % Record the estimated uncertainty in each of the states
-    p_est(:, end+1) = [ekf.P(1,1), ekf.P(2,2), ekf.P(3,3), ekf.P(4,4)]';
+    p_est(:, end+1) = [ekf.P(1,1), ekf.P(2,2), ekf.P(3,3)]';
 end
 
 exportMatrix = [times', x_est', p_est'];

@@ -10,7 +10,7 @@ function plotting(times, x_est, p_est, data_struct)
     figure;
 
     % Plot Altitude with STD bounds
-    subplot(3, 1, 1);
+    subplot(2, 1, 1);
     hold on;
     fill([times, fliplr(times)], [x_est(1,:) + 3*std_altitude, fliplr(x_est(1,:) - 3*std_altitude)], [0.9 0.9 0.9], 'EdgeColor', 'none');
     fill([times, fliplr(times)], [x_est(1,:) + 2*std_altitude, fliplr(x_est(1,:) - 2*std_altitude)], [0.7 0.7 0.7], 'EdgeColor', 'none');
@@ -23,7 +23,7 @@ function plotting(times, x_est, p_est, data_struct)
     legend('3 STD', '2 STD', '1 STD', 'Estimated Altitude', 'Actual Altitude');
 
     % Plot Velocity with STD bounds
-    subplot(3, 1, 2);
+    subplot(2, 1, 2);
     hold on;
     fill([times, fliplr(times)], [x_est(2,:) + 3*std_velocity, fliplr(x_est(2,:) - 3*std_velocity)], [0.9 0.9 0.9], 'EdgeColor', 'none');
     fill([times, fliplr(times)], [x_est(2,:) + 2*std_velocity, fliplr(x_est(2,:) - 2*std_velocity)], [0.7 0.7 0.7], 'EdgeColor', 'none');
@@ -34,24 +34,10 @@ function plotting(times, x_est, p_est, data_struct)
     title('Estimated Velocity');
     legend('3 STD', '2 STD', '1 STD', 'Estimated Velocity');
 
-    % Plot Acceleration with STD bounds
-    subplot(3, 1, 3);
-    hold on;
-    fill([times, fliplr(times)], [x_est(3,:) + 3*std_acceleration, fliplr(x_est(3,:) - 3*std_acceleration)], [0.9 0.9 0.9], 'EdgeColor', 'none');
-    fill([times, fliplr(times)], [x_est(3,:) + 2*std_acceleration, fliplr(x_est(3,:) - 2*std_acceleration)], [0.7 0.7 0.7], 'EdgeColor', 'none');
-    fill([times, fliplr(times)], [x_est(3,:) + std_acceleration, fliplr(x_est(3,:) - std_acceleration)], [0.5 0.5 0.5], 'EdgeColor', 'none');
-    plot(times, x_est(3,:), 'b', 'LineWidth', 0.5);
-    scatter(data_struct.timestamp, data_struct.imu_accZ, 4, "LineWidth", 0.1);
-    xlabel('Time (s)');
-    ylabel('Acceleration (m/s^2)');
-    title('Estimated Acceleration vs Actual Acceleration');
-    legend('3 STD', '2 STD', '1 STD', 'Estimated Acceleration', 'Actual Acceleration');
-
-    hold off;
 
     % Ballistic coefficient plotting
-    Cb = x_est(4, :);
-    Cb_var = p_est(4, :);  % Assuming these are variance values
+    Cb = x_est(3, :);
+    Cb_var = p_est(3, :);  % Assuming these are variance values
     Cb_std = sqrt(Cb_var); % Calculate standard deviation
 
     % Calculate bounds for 1, 2, and 3 standard deviations
