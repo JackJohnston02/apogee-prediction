@@ -21,26 +21,23 @@ dt = 0.01; % Time step
 data_struct.imu_acc = [data_struct.imu_accX, data_struct.imu_accY, data_struct.imu_accZ];
 
 % Initial state vector [altitude; velocity; acceleration; ballistic coefficient]
-x_init = [data_struct.baro_altitude(1); 1; 1];
+x_init = [data_struct.baro_altitude(1); 1; 1500];
 
 % Estimation error covariance matrix
 P_init = eye(3);
 
 % Static process noise covariance matrix
-Q = 1e1*[(dt^5)/20, (dt^4)/8, (dt^3)/6, 0;
-        (dt^4)/8, (dt^3)/3, (dt^2)/2, 1e-32;
-       (dt^3)/6, (dt^2)/2, dt, 1e-16;
-        0, 0, 1e-16, 1e-15];
+Q_s = 1e-2; % scaling parameter for process noise
 
 % Measurement noise covariance matrices
 R_b = 0.5744578867366569; % Measurement noise covariance for barometer
-R_a = 0.006942717204787825; % Measurement noise covariance for accelerometer
+R_a = 1e5;%0.006942717204787825; % Measurement noise covariance for accelerometer
 
 % Initialize the timestamps and convert to seconds
 data_struct.timestamp = (data_struct.timestamp - min(data_struct.timestamp)) / 1000;
 
 % Create EKF object
-ekf = Observer_EKF(x_init, P_init, Q, R_a, R_b, dt);
+ekf = Observer_EKF(x_init, P_init, Q_s, R_a, R_b, dt);
 
 % Initialize arrays for storing estimates
 x_est = [];
@@ -59,7 +56,7 @@ z_a = data_struct.imu_acc(1,:);
 rho = 1.225;
 apogees = [];
 % Loop until landed or apogee detected or end of data
-for i = 1:length(data_struct.timestamp)
+while t < 20
     t = t + dt; % Increment time
     times = [times, t]; % Store current time
 
@@ -70,21 +67,23 @@ for i = 1:length(data_struct.timestamp)
     if k <= length(data_struct.timestamp) && t >= data_struct.timestamp(k)
         % Check if it's time for a barometer update
         if data_struct.baro_altitude(k) ~= z_b
+
             z_b = data_struct.baro_altitude(k); % Barometer measurement
             [ekf, updated_state, updated_covariance] = ekf.updateBarometer(z_b); % Update state with barometer measurement
         end
 
         % Check if it's time for an accelerometer update
         if data_struct.imu_acc(k,:) ~= z_a
-            z_a = data_struct.imu_acc(k,:); % Accelerometer measurement
-            [ekf, updated_state, updated_covariance] = ekf.updateAccelerometer(z_a); % Update state with accelerometer measurement
+           z_a = data_struct.imu_acc(k,:); % Accelerometer measurement
+           [ekf, updated_state, updated_covariance] = ekf.updateAccelerometer(z_a(3)); % Update state with accelerometer measurement
         end
-
+        
         k = k + 1; % Increment measurement index
     end
 
     % Record the estimated states
-    x_est(:, end + 1) = ekf.x;
+    disp(ekf.x)
+    x_est(:, end + 1) = [ekf.x]';
     % Record the estimated uncertainty in each of the states
     p_est(:, end+1) = [ekf.P(1,1), ekf.P(2,2), ekf.P(3,3)]';
 end
