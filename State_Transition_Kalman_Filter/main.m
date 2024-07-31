@@ -38,7 +38,6 @@ alt_init = data_struct.baro_altitude(1);
 sigma_alt = 0.5744578867366569; %STD for altitude
 
 % Initial state vector [altitude; vertical velocity]
-x_init = [data_struct.baro_altitude(1); 0];
 
 STFilter = kalmanFilterCV(alt_init, sigma_alt, 0.01);
 

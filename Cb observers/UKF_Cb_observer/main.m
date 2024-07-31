@@ -95,7 +95,8 @@ for i = 1:length(data_struct.timestamp)
 
 end
 
-exportMatrix = [times', x_est', p_est'];
+% Save the Cb data for plotting
+exportMatrix = [times', x_est(4,:)'];
+writematrix(exportMatrix',"data_filtered/" + export_filename + "_UKF_filtered.csv") 
 
 run("plotting.m");
-writematrix(exportMatrix',"data_filtered/" + export_filename + "_filtered.csv") 

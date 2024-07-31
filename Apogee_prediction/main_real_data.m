@@ -35,7 +35,7 @@ Q = 1e-2* [(dt^5)/20, (dt^4)/8, (dt^3)/6, 0;
 
 
 % Measurement noise covariance matrices
-R_b = 1e-3; % Measurement noise covariance for barometer
+R_b = 0.54; % Measurement noise covariance for barometer
 R_a = 1e-3; % Measurement noise covariance for accelerometer
 
 % Initialize the timestamps and convert to seconds

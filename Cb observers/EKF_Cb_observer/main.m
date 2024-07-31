@@ -86,11 +86,9 @@ while t < 20
     p_est(:, end+1) = [ekf.P(1,1), ekf.P(2,2), ekf.P(3,3)]';
 end
 
-exportMatrix = [times', x_est', p_est'];
-
-% Save filtered data
-writematrix(exportMatrix',"data_filtered/" + export_filename + "_filtered.csv");
-
+% Save the Cb data for plotting
+exportMatrix = [times', x_est(3,:)'];
+writematrix(exportMatrix',"data_filtered/" + export_filename + "_EKF_filtered.csv") 
 
 % Plot results
 plotting(times, x_est, p_est, data_struct);

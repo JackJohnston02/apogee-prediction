@@ -1,0 +1,23 @@
+clear all;
+
+file = 'kalman_filtered_data.csv';
+data = readmatrix(file)';
+
+times = data(:, 1);
+altitudes = data(:, 2);
+velocities = data(:, 3);
+accelerations = data(:, 4);
+
+i = 0;
+for t = times
+    i = i + 1;
+    
+    rho = 1.29;
+    velocity = velocities(i);
+    ac
+
+    cb = rho * ;
+
+    cbs = [cbs, cb];
+    
+end

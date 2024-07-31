@@ -38,14 +38,14 @@ classdef stateMachine
             end
     
             % Check for transition from burning to coasting ~ burnout
-            if obj.burning == true && t > obj.padToBurning + 3
+            if obj.burning == true && t > obj.padToBurning + 3.3
                 obj.burning = false;
                 obj.coasting = true;
                 obj.burningToCoasting = t;
             end
             
             % Check for transition from coasting to descent ~ apogee
-            if obj.coasting == true && abs(x(2)) < 1;
+            if obj.coasting == true && abs(x(2)) < 0.5
                 obj.coasting = false;
                 obj.descent = true;
                 obj.coastingTodescent = t;
@@ -53,7 +53,7 @@ classdef stateMachine
             end
 
             % Check for transition from descent to landed ~ touchdown
-            if obj.descent == true && abs(x(2)) < 1 && x(1) < obj.apogeeAltitude - 200
+            if obj.descent == true && abs(x(2)) < 1 && x(1) < obj.apogeeAltitude/2
                 obj.descent = false;
                 obj.landed = true;
                 obj.descentToLanded = t;
