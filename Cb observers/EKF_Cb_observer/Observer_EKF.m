@@ -48,28 +48,22 @@ classdef Observer_EKF
 
         %% Accelerometer update step
         function [obj, updated_state, updated_covariance] = updateAccelerometer(obj, measurement)
-             rho = obj.get_density(obj.x(1));
-            if obj.x(1) > 400
-                % Need to conver acceleration measurement to ballistic coefficient
-                measurement = (rho * obj.x(2)^2)/(2*measurement);
-                H = [0, 0, 1]; % Measurement matrix
-                y = measurement - H * obj.x; % Measurement residual
-                S = H * obj.P * H' + obj.R_acc; % Residual covariance
-                K = obj.P * H' / S; % Kalman gain
-                
-                % Update state
-                obj.x = obj.x + y *K;
-                updated_state = obj.x;
-                
-                % Update covariance
-                obj.P = (eye(size(obj.P)) - K * H) * obj.P;
-                updated_covariance = obj.P;
+            rho = obj.get_density(obj.x(1));
 
-            else
-                Cb = (rho * obj.x(2)^2)/(2 * abs(measurement));
-                updated_covariance = obj.P;
-                updated_state = [obj.x(1), obj.x(2), Cb]';
-            end
+            % Need to conver acceleration measurement to ballistic coefficient
+            measurement = (rho * obj.x(2)^2)/(2*(measurement));
+            H = [0, 0, 1]; % Measurement matrix
+            y = measurement - H * obj.x; % Measurement residual
+            S = H * obj.P * H' + obj.R_acc; % Residual covariance
+            K = obj.P * H' / S; % Kalman gain
+            
+            % Update state
+            obj.x = obj.x + y *K;
+            updated_state = obj.x;
+            
+            % Update covariance
+            obj.P = (eye(size(obj.P)) - K * H) * obj.P;
+            updated_covariance = obj.P;
         end
 
         %% Barometer update step

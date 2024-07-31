@@ -65,8 +65,8 @@ function plotting(times, x_est, p_est, data_struct)
     ylabel('Ballistic Coefficient');
     title('Estimated Ballistic Coefficient with Standard Deviations');
     legend('3 STD', '2 STD', '1 STD', 'Ballistic Coefficient');
-    xline(11);
-    xline(17)
+    ylim([0, 2000]);
+    xlim([9.14, 17.73]);
 
     hold off;
 end

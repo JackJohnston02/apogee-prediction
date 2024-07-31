@@ -27,7 +27,7 @@ x_init = [data_struct.baro_altitude(1); 1; 1500];
 P_init = eye(3);
 
 % Static process noise covariance matrix
-Q_s = 1e-2; % scaling parameter for process noise
+Q_s = 1e2; % scaling parameter for process noise
 
 % Measurement noise covariance matrices
 R_b = 0.5744578867366569; % Measurement noise covariance for barometer
@@ -63,24 +63,22 @@ while t < 20
     % Predict step
     [ekf, predicted_state, predicted_covariance] = ekf.predict(t);
 
-    % Update step if new data is available
-    if k <= length(data_struct.timestamp) && t >= data_struct.timestamp(k)
-        % Check if it's time for a barometer update
-        if data_struct.baro_altitude(k) ~= z_b
-
-            z_b = data_struct.baro_altitude(k); % Barometer measurement
-            [ekf, updated_state, updated_covariance] = ekf.updateBarometer(z_b); % Update state with barometer measurement
+        % Update step if new data is available
+        if k <= length(data_struct.timestamp) && t >= data_struct.timestamp(k)
+            % Check if it's time for a barometer update
+            if data_struct.baro_altitude(k) ~= z_b
+    
+                z_b = data_struct.baro_altitude(k); % Barometer measurement
+                [ekf, updated_state, updated_covariance] = ekf.updateBarometer(z_b); % Update state with barometer measurement
+            end
+    
+            % Check if it's time for an accelerometer update
+            if data_struct.imu_acc(k,:) ~= z_a
+               z_a = data_struct.imu_acc(k,:); % Accelerometer measurement
+               [ekf, updated_state, updated_covariance] = ekf.updateAccelerometer(z_a(3)); % Update state with accelerometer measurement
+            end
+            k = k + 1; % Increment measurement index
         end
-
-        % Check if it's time for an accelerometer update
-        if data_struct.imu_acc(k,:) ~= z_a
-           z_a = data_struct.imu_acc(k,:); % Accelerometer measurement
-           [ekf, updated_state, updated_covariance] = ekf.updateAccelerometer(z_a(3)); % Update state with accelerometer measurement
-        end
-        
-        k = k + 1; % Increment measurement index
-    end
-
     % Record the estimated states
     disp(ekf.x)
     x_est(:, end + 1) = [ekf.x]';
@@ -92,6 +90,7 @@ exportMatrix = [times', x_est', p_est'];
 
 % Save filtered data
 writematrix(exportMatrix',"data_filtered/" + export_filename + "_filtered.csv");
+
 
 % Plot results
 plotting(times, x_est, p_est, data_struct);
