@@ -95,6 +95,11 @@ for i = 1:length(data_struct.timestamp)
 
 end
 
+% Save the Cb data for plotting
+exportMatrix = [times', x_est(:,:)'];
+writematrix(exportMatrix',"data_filtered/kalman_filtered_data.csv") 
+
+
 % Plotting states
 figure;
 subplot(3,1,1);
@@ -150,4 +155,7 @@ plot(times, x_est(1,:))
 grid on;
 grid minor;
 hold off
+
+
+
 
