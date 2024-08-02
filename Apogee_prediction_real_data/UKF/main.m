@@ -5,12 +5,13 @@
 
 %% Tidy up
 clear all;
-
+close all; % Uncomment if comparing plots
+pause(1);
 %% Select filter type
 % UKF_constant_acceleration
 % UKF_constant_Cb
 
-filter_type = "UKF_constant_acceleration";
+filter_type = "UKF_constant_Cb";
 
 % Load data
 filename = 'data/owen.csv';
@@ -26,8 +27,11 @@ for i = 1:length(column_headers)
     data_struct.(column_name) = column_data;
 end
 data_struct.imu_acc = [data_struct.imu_accZ]; %Only care about the Z component of the acceleration
+
+
 data_struct.timestamp = (data_struct.timestamp - min(data_struct.timestamp)) / 1000;
 
+data_struct = crop_data_struct(data_struct, 0, 18);
 
 % Initialise logging arrays
 x_est = [];
@@ -38,11 +42,13 @@ apogee_log = [];
 z_b = data_struct.baro_altitude(1);
 z_a = data_struct.imu_acc(1,:);
 
+
+%% Initialise filter object
 switch filter_type
     case "UKF_constant_acceleration"
         initial_state = [z_b, 0, z_a, 0]';
         initial_covariance = eye(4);
-        process_noise = 1e2*diag([1e-3, 1e-3, 1e-2, 1e-3]);
+        process_noise = 1e2*diag([1e-3, 1e-3, 1e-2, 1e1]);
         measurement_noise_bar = 0.5744578867366569;
         measurement_noise_acc = 0.006942717204787825;
         t = 0;
@@ -50,25 +56,29 @@ switch filter_type
         filter = UKF_constant_acceleration(initial_state, initial_covariance, process_noise, measurement_noise_acc, measurement_noise_bar, t, dt_apa);
    
     case "UKF_constant_Cb"
-        initial_state = [z_b, 0, z_a, 0]';
+        initial_state = [z_b, 0, z_a, 1400]';
         initial_covariance = eye(4);
-        process_noise = 1e2*diag([1e-3, 1e-3, 1e-2, 1e-3]);
+        process_noise = 1e-1*eye(4);
         measurement_noise_bar = 0.5744578867366569;
         measurement_noise_acc = 0.006942717204787825;
         t = 0;
         dt_apa = 0.01;
         filter = UKF_constant_Cb(initial_state, initial_covariance, process_noise, measurement_noise_acc, measurement_noise_bar, t, dt_apa);
+
+    otherwise
+        % Throw error if invalid filter is selected
+        error("Invalid choice of filter")
 end
 
 
 
 dt = 0.01;
 k = 1;
-for i = 1:(length(data_struct.timestamp))
+
+while t < max(data_struct.timestamp)
+    disp(round((t/max(data_struct.timestamp)*100),2) + "% complete at time:" + t);
+    
     t = t + dt; % Increment time
-
-    disp(round((i/length(data_struct.timestamp)*100),2) + "% complete");
-
     times = [times, t]; % Store current time
 
 
@@ -107,5 +117,22 @@ writematrix(exportMatrix',"data_filtered/UKF_filtered_data.csv")
 
 
 run("plotting.m")
+
+
+function cropped_struct = crop_data_struct(data_struct, start_time, end_time)
+    % Find the indices where the timestamp is within the specified range
+    valid_indices = data_struct.timestamp >= start_time & data_struct.timestamp <= end_time;
+    
+    % Initialize the cropped struct
+    cropped_struct = struct();
+
+    % Iterate over each field in the struct and crop the data
+    field_names = fieldnames(data_struct);
+    for i = 1:length(field_names)
+        field = field_names{i};
+        cropped_struct.(field) = data_struct.(field)(valid_indices);
+    end
+end
+
 
 

@@ -176,13 +176,28 @@ classdef UKF_constant_Cb
 
 
         function sigma_points = processModel(obj, sigma_points, dt)
+            % Conditional statement required as we cannot use the constant
+            % Cb model when in the burning state, just let Cb track loosely
+
             for i = 1:size(sigma_points, 2)
+                
                 x_s = sigma_points(:, i);
+
+                g = obj.get_gravity(x_s(1));
                 rho = obj.get_density(x_s(1));
-                x_s(1) = x_s(1) + x_s(2) * dt + 1/2 * x_s(3) * dt^2;
-                x_s(2) = x_s(2) + x_s(3) * dt;
-                x_s(3) = x_s(3);
-                x_s(4) = x_s(4);
+                
+                if g - x_s(3) > 0 % Model for ballistic state - constant ballistic coefficient
+                    x_s(1) = x_s(1) + x_s(2) * dt + 1/2 * x_s(3) * dt^2;
+                    x_s(2) = x_s(2) + x_s(3) * dt;
+                    x_s(3) = g - (rho * x_s(2)^2) / (2 * x_s(4));
+                    x_s(4) = x_s(4);
+
+                else % Model for non-ballistic state - constant acceleration
+                    x_s(1) = x_s(1) + x_s(2) * dt + 1/2 * x_s(3) * dt^2;
+                    x_s(2) = x_s(2) + x_s(3) * dt;
+                    x_s(3) = x_s(3);
+                    x_s(4) = x_s(4);%(rho * x_s(2)^2) / (2 * (abs(g - x_s(3))));
+                end
 
                 x_new = [x_s(1); x_s(2); x_s(3); x_s(4)];
                 sigma_points(:, i) = x_new;
