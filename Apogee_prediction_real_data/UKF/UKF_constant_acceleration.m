@@ -2,13 +2,11 @@ classdef UKF_constant_acceleration
     % Author : Jack Johnston
     % Date : 31/07/24
 
-    % Refactoring and combination of previous code
-
     % Unscented Kalman filter, for state observation of Cb
     % State estimator for altitude, vertical velocity, vertical
-    % acceleration, and vertical ballisitic coefficient
+    % acceleration, and vertical ballistic coefficient
 
-    % Inludes apogee prediction method, which consists of a series of
+    % Includes apogee prediction method, which consists of a series of
     % unscented predict steps to obtain and estimate for both apogee and
     % time of apogee as well as the covariance associated with each.
 
@@ -17,17 +15,18 @@ classdef UKF_constant_acceleration
         x               % State vector
         P               % State covariance matrix
         Q               % Process noise covariance matrix
-        R_acc           % Acceleromater measurement noise covariance matrix
+        R_acc           % Accelerometer measurement noise covariance matrix
         R_bar           % Barometer measurement noise covariance matrix
         t_last_update   % Time of last update
         dt_apa          % Timestep of the apogee prediction method
         alpha           % UKF parameter
         beta            % UKF parameter
         kappa           % UKF parameter
+        sigma_a         % Standard deviation of acceleration noise
     end
 
     methods
-        function obj = UKF_constant_acceleration(initial_state, initial_covariance, process_noise, measurement_noise_acc, measurement_noise_bar, t, dt_apa)
+        function obj = UKF_constant_acceleration(initial_state, initial_covariance, process_noise, measurement_noise_acc, measurement_noise_bar, t, dt_apa, sigma_a)
             obj.x = initial_state;
             obj.P = initial_covariance;
             obj.Q = process_noise;
@@ -38,20 +37,24 @@ classdef UKF_constant_acceleration
             obj.alpha = 1e-3;
             obj.beta = 2;
             obj.kappa = 0;
+            obj.sigma_a = sigma_a; % Initialize sigma_a
         end
 
         function [obj, predicted_state, predicted_covariance] = predict(obj, t_current)
             % UKF prediction step
 
-            % Generate sigma points
-            [sigma_points, weights_mean, weights_cov] = obj.generateSigmaPoints(obj.x, obj.P);
-
             % Calculate dt since last prediction
             dt = t_current - obj.t_last_update;
             obj.t_last_update = t_current;
+
+            % Update the process noise matrix Q
+            obj.Q = obj.calculateProcessNoise(dt, obj.sigma_a);
+
+            % Generate sigma points
+            [sigma_points, weights_mean, weights_cov] = obj.generateSigmaPoints(obj.x, obj.P);
+
             % Propagate the sigma points through the processModel
             predicted_sigma_points = obj.processModel(sigma_points, dt);
-
 
             predicted_state = predicted_sigma_points * weights_mean;
 
@@ -60,12 +63,18 @@ classdef UKF_constant_acceleration
             predicted_covariance = obj.calculateCovariance(predicted_sigma_points, predicted_state, weights_cov, obj.Q);
 
             obj.x = predicted_state;
-
             obj.P = predicted_covariance;
         end
 
+        function Q = calculateProcessNoise(obj, dt, sigma_a)
+            % Calculate the process noise covariance matrix Q
+            Q = [1/4*dt^4*sigma_a^2, 1/2*dt^3*sigma_a^2, 1/2*dt^2*sigma_a^2, 0;
+                 1/2*dt^3*sigma_a^2,    dt^2*sigma_a^2,    dt*sigma_a^2, 0;
+                 1/2*dt^2*sigma_a^2,      dt*sigma_a^2,          sigma_a^2, 0;
+                 0, 0, 0, 0];
+        end
+
         function [apogee, apogee_cov] = get_apogee(obj)
-            %todo something wrong here, it seems to get stuck in the loop
             propagated_x = obj.x;
             propagated_P = obj.P;
 
@@ -80,17 +89,15 @@ classdef UKF_constant_acceleration
                 predicted_covariance = obj.calculateCovariance(predicted_sigma_points, predicted_state, weights_cov, obj.Q);
 
                 propagated_x = predicted_state;
-
-               propagated_P = predicted_covariance;
+                propagated_P = predicted_covariance;
             end
 
             apogee = propagated_x(1);
             apogee_cov = propagated_P(1,1);
-
         end
 
         function [obj, updated_state, updated_covariance] = updateAccelerometer(obj, measurement, t_current)
-            % Pre-processing, acceleromter does not measure gravity
+            % Pre-processing, accelerometer does not measure gravity
             measurement = measurement + obj.get_gravity(obj.x(1));
             % Update timer for last update
             obj.t_last_update = t_current;
@@ -122,7 +129,6 @@ classdef UKF_constant_acceleration
             end
         end
 
-
         function [obj, updated_state, updated_covariance] = updateBarometer(obj, measurement, t_current)
             % UKF Update step for barometer
             obj.t_last_update = t_current;
@@ -149,10 +155,8 @@ classdef UKF_constant_acceleration
             end
         end
 
-
         function [sigma_points, weights_mean, weights_cov] = generateSigmaPoints(obj, mean, cov)
             % Generate sigma points
-
             n = length(mean);
             lambda = obj.alpha^2 * (n + obj.kappa) - n;
             sigma_points = zeros(n, 2*n + 1);
@@ -174,7 +178,6 @@ classdef UKF_constant_acceleration
             end
         end
 
-
         function sigma_points = processModel(obj, sigma_points, dt)
             for i = 1:size(sigma_points, 2)
                 x_s = sigma_points(:, i);
@@ -188,7 +191,6 @@ classdef UKF_constant_acceleration
                 sigma_points(:, i) = x_new;
             end
         end
-
 
         function covariance = calculateCovariance(obj, sigma_points, mean, weights, noise_cov)
             % Calculate covariance matrix
@@ -226,6 +228,7 @@ classdef UKF_constant_acceleration
 
             rho = (p_0 * M)/(R * T_0) * (1 - (L * h)/(T_0))^(((-g * M) / (R* L)) - 1); % -g used as g is -ve by default
         end
+
         function g = get_gravity(obj, h)
             % Returns gravity as a function of altitude
             % Approximates the Earth's gravity assumes a perfect sphere
@@ -235,9 +238,5 @@ classdef UKF_constant_acceleration
 
             g = g_0 * (R_e / (R_e + h))^2;
         end
-
-
-
     end
 end
-

@@ -48,7 +48,7 @@ hold on;
 xlabel('Time (s)', 'FontWeight', 'bold');
 ylabel('Ballistic Coefficient', 'FontWeight', 'bold');
 title('Estimated Ballistic Coefficient', 'FontWeight', 'bold');
-ylim([0, 2000]);
+ylim([1400, 1500]);
 grid on;
 hold off;
 

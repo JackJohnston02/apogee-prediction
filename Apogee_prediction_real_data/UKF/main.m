@@ -2,6 +2,7 @@
  % Need to impliment the constant_Cb function
  % Need to improve the plotting functions, add switch case statements where
  % neccesary
+ % Need to include dynamic process noise matrix in the Cb methods
 
 %% Tidy up
 clear all;
@@ -11,7 +12,7 @@ pause(1);
 % UKF_constant_acceleration
 % UKF_constant_Cb
 
-filter_type = "UKF_constant_Cb";
+filter_type = "UKF_constant_acceleration";
 
 % Load data
 filename = 'data/owen.csv';
@@ -48,22 +49,24 @@ switch filter_type
     case "UKF_constant_acceleration"
         initial_state = [z_b, 0, z_a, 0]';
         initial_covariance = eye(4);
-        process_noise = 1e2*diag([1e-3, 1e-3, 1e-2, 1e1]);
+        process_noise = 1e-2*diag([1e-3, 1e-3, 1e-2, 1e1]);
         measurement_noise_bar = 0.5744578867366569;
         measurement_noise_acc = 0.006942717204787825;
+        sigma_a = 1e-1; % process std
         t = 0;
         dt_apa = 0.01;
-        filter = UKF_constant_acceleration(initial_state, initial_covariance, process_noise, measurement_noise_acc, measurement_noise_bar, t, dt_apa);
-   
+        filter = UKF_constant_acceleration(initial_state, initial_covariance, process_noise, measurement_noise_acc, measurement_noise_bar, t, dt_apa, sigma_a);
+               
     case "UKF_constant_Cb"
         initial_state = [z_b, 0, z_a, 1400]';
         initial_covariance = eye(4);
-        process_noise = 1e-1*eye(4);
+        process_noise = 1e-2*eye(4);
         measurement_noise_bar = 0.5744578867366569;
         measurement_noise_acc = 0.006942717204787825;
+
         t = 0;
         dt_apa = 0.01;
-        filter = UKF_constant_Cb(initial_state, initial_covariance, process_noise, measurement_noise_acc, measurement_noise_bar, t, dt_apa);
+        filter = UKF_constant_Cb(initial_state, initial_covariance, measurement_noise_acc, measurement_noise_bar, t, dt_apa);
 
     otherwise
         % Throw error if invalid filter is selected
