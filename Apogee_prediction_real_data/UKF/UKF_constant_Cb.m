@@ -17,27 +17,31 @@ classdef UKF_constant_Cb
         x               % State vector
         P               % State covariance matrix
         Q               % Process noise covariance matrix
-        R_acc           % Acceleromater measurement noise covariance matrix
+        R_acc           % Accelerometer measurement noise covariance matrix
         R_bar           % Barometer measurement noise covariance matrix
         t_last_update   % Time of last update
         dt_apa          % Timestep of the apogee prediction method
         alpha           % UKF parameter
         beta            % UKF parameter
         kappa           % UKF parameter
+        sigma_Q         % Standard deviation of acceleration noise
+        sigma_Q_Cb      % Scalr term 
     end
 
     methods
-        function obj = UKF_constant_Cb(initial_state, initial_covariance, process_noise, measurement_noise_acc, measurement_noise_bar, t, dt_apa)
+        function obj = UKF_constant_Cb(initial_state, initial_covariance, sigma_Q, sigma_Q_Cb, measurement_noise_acc, measurement_noise_bar, t);
             obj.x = initial_state;
             obj.P = initial_covariance;
-            obj.Q = process_noise;
+            obj.Q = sigma_Q * diag([1e-3, 1e-3, 1e-2, 1e1]);
             obj.R_acc = measurement_noise_acc;
             obj.R_bar = measurement_noise_bar;
             obj.t_last_update = t;
-            obj.dt_apa = dt_apa;
+            obj.dt_apa = 0.01;
             obj.alpha = 1e-3;
             obj.beta = 2;
             obj.kappa = 0;
+            obj.sigma_Q = sigma_Q; % Initialize obj.sigma_Q
+            obj.sigma_Q_Cb = sigma_Q_Cb;% Scaler for Cb Q matrix
         end
 
         function [obj, predicted_state, predicted_covariance] = predict(obj, t_current)
@@ -64,6 +68,14 @@ classdef UKF_constant_Cb
             obj.P = predicted_covariance;
         end
 
+        function Q = calculateProcessNoise(obj, dt)
+            % Calculate the process noise covariance matrix Q
+            Q = [1/4*dt^4*obj.sigma_Q^2, 1/2*dt^3*obj.sigma_Q^2, 1/2*dt^2*obj.sigma_Q^2, 0;
+                 1/2*dt^3*obj.sigma_Q^2,    dt^2*obj.sigma_Q^2,    dt*obj.sigma_Q^2, 0;
+                 1/2*dt^2*obj.sigma_Q^2,      dt*obj.sigma_Q^2,          obj.sigma_Q^2, 0;
+                 0, 0, 0, obj.sigma_Q_Cb^2];
+        end
+
         function [apogee, apogee_cov] = get_apogee(obj)
             %todo something wrong here, it seems to get stuck in the loop
             propagated_x = obj.x;
@@ -81,7 +93,7 @@ classdef UKF_constant_Cb
 
                 propagated_x = predicted_state;
 
-               propagated_P = predicted_covariance;
+                propagated_P = predicted_covariance;
             end
 
             apogee = propagated_x(1);
@@ -180,12 +192,12 @@ classdef UKF_constant_Cb
             % Cb model when in the burning state, just let Cb track loosely
 
             for i = 1:size(sigma_points, 2)
-                
+
                 x_s = sigma_points(:, i);
 
                 g = obj.get_gravity(x_s(1));
                 rho = obj.get_density(x_s(1));
-                
+
                 if g - x_s(3) > 0 % Model for ballistic state - constant ballistic coefficient
                     x_s(1) = x_s(1) + x_s(2) * dt + 1/2 * x_s(3) * dt^2;
                     x_s(2) = x_s(2) + x_s(3) * dt;
@@ -250,9 +262,6 @@ classdef UKF_constant_Cb
 
             g = g_0 * (R_e / (R_e + h))^2;
         end
-
-
-
     end
 end
 

@@ -44,30 +44,22 @@ z_b = data_struct.baro_altitude(1);
 z_a = data_struct.imu_acc(1,:);
 
 
+initial_state = [z_b, 0, z_a, 1400]';
+initial_covariance = eye(4);
+sigma_Q = 1e1;
+sigma_Q_Cb = 1;
+measurement_noise_bar = 0.5744578867366569;
+measurement_noise_acc = 0.006942717204787825;
+t = 0;
+
 %% Initialise filter object
 switch filter_type
     case "UKF_constant_acceleration"
-        initial_state = [z_b, 0, z_a, 0]';
-        initial_covariance = eye(4);
-        process_noise = 1e-2*diag([1e-3, 1e-3, 1e-2, 1e1]);
-        measurement_noise_bar = 0.5744578867366569;
-        measurement_noise_acc = 0.006942717204787825;
-        sigma_a = 1e-1; % process std
-        t = 0;
-        dt_apa = 0.01;
-        filter = UKF_constant_acceleration(initial_state, initial_covariance, process_noise, measurement_noise_acc, measurement_noise_bar, t, dt_apa, sigma_a);
-               
+        filter = UKF_constant_acceleration(initial_state, initial_covariance, sigma_Q, sigma_Q_Cb, measurement_noise_acc, measurement_noise_bar, t);
+   
     case "UKF_constant_Cb"
-        initial_state = [z_b, 0, z_a, 1400]';
-        initial_covariance = eye(4);
-        process_noise = 1e-2*eye(4);
-        measurement_noise_bar = 0.5744578867366569;
-        measurement_noise_acc = 0.006942717204787825;
-
-        t = 0;
-        dt_apa = 0.01;
-        filter = UKF_constant_Cb(initial_state, initial_covariance, measurement_noise_acc, measurement_noise_bar, t, dt_apa);
-
+       filter = UKF_constant_Cb(initial_state, initial_covariance, sigma_Q, sigma_Q_Cb, measurement_noise_acc, measurement_noise_bar, t);
+            
     otherwise
         % Throw error if invalid filter is selected
         error("Invalid choice of filter")

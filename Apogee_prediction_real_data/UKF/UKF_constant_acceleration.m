@@ -22,22 +22,25 @@ classdef UKF_constant_acceleration
         alpha           % UKF parameter
         beta            % UKF parameter
         kappa           % UKF parameter
-        sigma_a         % Standard deviation of acceleration noise
+        sigma_Q         % Standard deviation of acceleration noise
+        sigma_Q_Cb      % Scalr term 
     end
 
     methods
-        function obj = UKF_constant_acceleration(initial_state, initial_covariance, process_noise, measurement_noise_acc, measurement_noise_bar, t, dt_apa, sigma_a)
+        function obj = UKF_constant_acceleration(initial_state, initial_covariance, sigma_Q, sigma_Q_Cb, measurement_noise_acc, measurement_noise_bar, t)
             obj.x = initial_state;
             obj.P = initial_covariance;
-            obj.Q = process_noise;
+            obj.Q = sigma_Q * diag([1e-3, 1e-3, 1e-2, 1e1]);
             obj.R_acc = measurement_noise_acc;
             obj.R_bar = measurement_noise_bar;
             obj.t_last_update = t;
-            obj.dt_apa = dt_apa;
+            obj.dt_apa = 0.01;
             obj.alpha = 1e-3;
             obj.beta = 2;
             obj.kappa = 0;
-            obj.sigma_a = sigma_a; % Initialize sigma_a
+            obj.sigma_Q = sigma_Q; % Initialize obj.sigma_Q
+            obj.sigma_Q_Cb = sigma_Q_Cb;% Scaler for Cb Q matrix
+            
         end
 
         function [obj, predicted_state, predicted_covariance] = predict(obj, t_current)
@@ -48,7 +51,7 @@ classdef UKF_constant_acceleration
             obj.t_last_update = t_current;
 
             % Update the process noise matrix Q
-            obj.Q = obj.calculateProcessNoise(dt, obj.sigma_a);
+            obj.Q = obj.calculateProcessNoise(dt);
 
             % Generate sigma points
             [sigma_points, weights_mean, weights_cov] = obj.generateSigmaPoints(obj.x, obj.P);
@@ -66,12 +69,12 @@ classdef UKF_constant_acceleration
             obj.P = predicted_covariance;
         end
 
-        function Q = calculateProcessNoise(obj, dt, sigma_a)
+        function Q = calculateProcessNoise(obj, dt)
             % Calculate the process noise covariance matrix Q
-            Q = [1/4*dt^4*sigma_a^2, 1/2*dt^3*sigma_a^2, 1/2*dt^2*sigma_a^2, 0;
-                 1/2*dt^3*sigma_a^2,    dt^2*sigma_a^2,    dt*sigma_a^2, 0;
-                 1/2*dt^2*sigma_a^2,      dt*sigma_a^2,          sigma_a^2, 0;
-                 0, 0, 0, 0];
+            Q = [1/4*dt^4*obj.sigma_Q^2, 1/2*dt^3*obj.sigma_Q^2, 1/2*dt^2*obj.sigma_Q^2, 0;
+                 1/2*dt^3*obj.sigma_Q^2,    dt^2*obj.sigma_Q^2,    dt*obj.sigma_Q^2, 0;
+                 1/2*dt^2*obj.sigma_Q^2,      dt*obj.sigma_Q^2,          obj.sigma_Q^2, 0;
+                 0, 0, 0, obj.sigma_Q_Cb^2];
         end
 
         function [apogee, apogee_cov] = get_apogee(obj)

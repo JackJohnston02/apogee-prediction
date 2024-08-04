@@ -1,3 +1,8 @@
+
+set(groot,'defaulttextinterpreter','latex');  
+set(groot,'defaultAxesTickLabelInterpreter','latex');  
+set(groot,'defaultLegendInterpreter','latex');
+
 % Plotting states
 figure;
 tiledlayout(4,1);
@@ -34,7 +39,7 @@ plot(times, x_est(3,:), 'Color', [0, 0.4470, 0.7410], 'LineWidth', 1.5); % Blue
 hold on;
 scatter(data_struct.timestamp, data_struct.imu_accZ - 9.81, 10, 'x', 'MarkerEdgeColor', [0.9290, 0.6940, 0.1250]); % Orange
 xlabel('Time (s)', 'FontWeight', 'bold');
-ylabel('Acceleration (m/s^2)', 'FontWeight', 'bold');
+ylabel('Acceleration (\(m/s^2\))', 'FontWeight', 'bold');
 title('Estimated Acceleration vs Actual Acceleration', 'FontWeight', 'bold');
 legend('Estimated Acceleration', 'IMU Acceleration', 'Location', 'best');
 yline(-9.81);
@@ -48,7 +53,6 @@ hold on;
 xlabel('Time (s)', 'FontWeight', 'bold');
 ylabel('Ballistic Coefficient', 'FontWeight', 'bold');
 title('Estimated Ballistic Coefficient', 'FontWeight', 'bold');
-ylim([1400, 1500]);
 grid on;
 hold off;
 
