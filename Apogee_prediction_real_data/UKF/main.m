@@ -12,7 +12,7 @@ pause(1);
 % UKF_constant_acceleration
 % UKF_constant_Cb
 
-filter_type = "UKF_constant_acceleration";
+filter_type = "UKF_constant_Cb";
 
 % Load data
 filename = 'data/owen.csv';
