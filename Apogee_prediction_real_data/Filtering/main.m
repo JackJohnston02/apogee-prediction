@@ -12,7 +12,7 @@ pause(1);
 % UKF_constant_acceleration
 % UKF_constant_Cb
 
-filter_type = "UKF_constant_Cb";
+filter_type = "UKF_constant_acceleration";
 
 % Load data
 filename = 'data/owen.csv';
@@ -44,7 +44,7 @@ z_b = data_struct.baro_altitude(1);
 z_a = data_struct.imu_acc(1,:);
 
 
-initial_state = [z_b, 0, z_a, 1400]';
+initial_state = [z_b, 0, z_a, 1300]';
 initial_covariance = eye(4);
 sigma_Q = 1e1;
 sigma_Q_Cb = 1;

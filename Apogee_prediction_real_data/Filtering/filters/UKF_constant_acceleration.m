@@ -184,7 +184,10 @@ classdef UKF_constant_acceleration
         function sigma_points = processModel(obj, sigma_points, dt)
             for i = 1:size(sigma_points, 2)
                 x_s = sigma_points(:, i);
+
+                g = obj.get_gravity(x_s(1));
                 rho = obj.get_density(x_s(1));
+                
                 x_s(1) = x_s(1) + x_s(2) * dt + 1/2 * x_s(3) * dt^2;
                 x_s(2) = x_s(2) + x_s(3) * dt;
                 x_s(3) = x_s(3);
