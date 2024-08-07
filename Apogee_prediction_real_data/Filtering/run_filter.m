@@ -41,8 +41,8 @@ z_a = data_struct.imu_accZ(1);
 
 initial_state = [z_b, 0, z_a, 1300]';
 initial_covariance = eye(4);
-sigma_Q = 1e1;
-sigma_Q_Cb = 1;
+sigma_Q = 1;
+sigma_Q_Cb = 10;
 measurement_noise_bar = 0.5744578867366569;
 measurement_noise_acc = 0.006942717204787825;
 t = 0;
@@ -52,9 +52,18 @@ switch filter_type
     case "UKF_constant_acceleration"
         filter = UKF_constant_acceleration(initial_state, initial_covariance, sigma_Q, sigma_Q_Cb, measurement_noise_acc, measurement_noise_bar, t);
         filter_name = "Constant Acceleration UKF";
+        
     case "UKF_constant_Cb"
         filter = UKF_constant_Cb(initial_state, initial_covariance, sigma_Q, sigma_Q_Cb, measurement_noise_acc, measurement_noise_bar, t);
         filter_name = "Constant Ballistic Coefficient UKF";
+    
+    case "EKF_constant_acceleration"
+        filter = EKF_constant_acceleration(initial_state, initial_covariance, sigma_Q, sigma_Q_Cb, measurement_noise_acc, measurement_noise_bar, t);
+        filter_name = "Constant Acceleration EKF";
+
+    case "EKF_constant_Cb"
+        filter = EKF_constant_Cb(initial_state, initial_covariance, sigma_Q, sigma_Q_Cb, measurement_noise_acc, measurement_noise_bar, t);
+        filter_name = "Constant Ballistic Coefficient EKF";
     otherwise
         % Throw error if invalid filter is selected
         error("Invalid choice of filter")

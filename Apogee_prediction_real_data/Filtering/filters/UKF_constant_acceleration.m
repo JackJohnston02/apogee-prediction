@@ -119,6 +119,12 @@ classdef UKF_constant_acceleration
             updated_state = obj.x + kalman_gain * innovation;
             updated_covariance = obj.P - kalman_gain * innovation_covariance * kalman_gain';
             obj.x = updated_state;
+
+            % Losely calculate the Cb
+            if obj.x(3) < obj.get_gravity(obj.x(1))
+                obj.x(4) = (obj.get_density(obj.x(1)) * obj.x(2)^2) / (2 * (abs(obj.x(3)) + obj.get_gravity(obj.x(1))));
+            end
+
             obj.P = updated_covariance;
         end
 

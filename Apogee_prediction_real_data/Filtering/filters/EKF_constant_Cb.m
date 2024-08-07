@@ -1,10 +1,7 @@
-classdef EKF_constant_acceleration
+classdef EKF_constant_Cb
     % Author : Jack Johnston
     % Date : 31/07/24
 
-    % Extended Kalman Filter state observer for constant acceleration
-    % Includes apogee prediction method
-    
     properties
         x               % State vector [altitude, velocity, acceleration, ballistic coefficient]
         P               % State covariance matrix
@@ -18,7 +15,7 @@ classdef EKF_constant_acceleration
     end
 
     methods
-        function obj = EKF_constant_acceleration(initial_state, initial_covariance, sigma_Q, sigma_Q_Cb, measurement_noise_acc, measurement_noise_bar, t)
+        function obj = EKF_constant_Cb(initial_state, initial_covariance, sigma_Q, sigma_Q_Cb, measurement_noise_acc, measurement_noise_bar, t)
             obj.x = initial_state;
             obj.P = initial_covariance;
             obj.Q = obj.calculateProcessNoise(sigma_Q, sigma_Q_Cb);

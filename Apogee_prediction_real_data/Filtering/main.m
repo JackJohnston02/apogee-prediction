@@ -22,7 +22,7 @@ filename = 'data/owen.csv';
 % UKF_constant_Cb
 
 %% Define all the filters here, need to add filter names to the initialise filter switchcase in run_filter.m
-filters = ["UKF_constant_acceleration", "UKF_constant_Cb", "All"];
+filters = ["UKF_constant_acceleration", "UKF_constant_Cb", "EKF_constant_acceleration", "EKF_constant_Cb", "All"];
 
 for i = 1:length(filters)
     disp(i + " for " + filters(i))

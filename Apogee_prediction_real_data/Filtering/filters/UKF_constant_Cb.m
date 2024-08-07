@@ -60,6 +60,7 @@ classdef UKF_constant_Cb
             predicted_state = predicted_sigma_points * weights_mean;
 
             % Calculate the covariance of the sigma points adding the
+            obj.Q = calculateProcessNoise(obj, dt);
             % process noise as well
             predicted_covariance = obj.calculateCovariance(predicted_sigma_points, predicted_state, weights_cov, obj.Q);
 
