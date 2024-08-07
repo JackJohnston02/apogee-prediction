@@ -1,8 +1,14 @@
 %% TODO
- % Need to impliment the constant_Cb function
- % Need to improve the plotting functions, add switch case statements where
- % neccesary
- % Need to include dynamic process noise matrix in the Cb methods
+% Add EKF 
+    % CCb
+    % Ca
+% Add Cubature
+    % CCb
+    % Ca
+
+% Add iterative script for all filters
+% Add comparison plotting for all filters
+  
 
 %% Tidy up
 clear all;
@@ -12,7 +18,7 @@ pause(1);
 % UKF_constant_acceleration
 % UKF_constant_Cb
 
-filter_type = "UKF_constant_acceleration";
+filter_type = "UKF_constant_Cb";
 
 % Load data
 filename = 'data/owen.csv';
