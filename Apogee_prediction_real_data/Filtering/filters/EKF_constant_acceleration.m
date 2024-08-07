@@ -34,16 +34,24 @@ classdef EKF_constant_acceleration
         end
 
         function obj = predict(obj,inputArg)
-            %METHOD1 Summary of this method goes here
-            %   Detailed explanation goes here
-            outputArg = obj.Property1 + inputArg;
+            % Prediction step
+            % Propagate through process method
         end
 
         function [apogee, apogee_cov] = get_apogee(obj)
             % Predicts apogee and associated uncertainty, uses multple
-            % propagate steps
+            % propagations through process method
         end
 
+        function predicted_states = processModel(obj, dt)
+            % Process method, used by both get_apogee method and prediction
+            % step
+            
+            % Construct Jacbobian
+            % Propagate states
+            % Propagete covariances
+
+        end
 
         function obj = updateAccelerometer(obj, measurement, t_current)
             % Accelerometer update step
