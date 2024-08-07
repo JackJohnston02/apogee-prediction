@@ -3,6 +3,7 @@ set(groot,'defaulttextinterpreter','latex');
 set(groot,'defaultAxesTickLabelInterpreter','latex');  
 set(groot,'defaultLegendInterpreter','latex');
 
+
 % Plotting states
 figure;
 tiledlayout(4,1);
@@ -16,10 +17,11 @@ scatter(data_struct.timestamp, data_struct.baro_altitude, 10, 'x', 'MarkerEdgeCo
 yline(max(x_est(1,:)), '--k', 'LineWidth', 1.5); % Black dashed line
 xlabel('Time (s)', 'FontWeight', 'bold');
 ylabel('Altitude (m)', 'FontWeight', 'bold');
-title('Estimated Altitude vs Actual Altitude', 'FontWeight', 'bold');
-legend('Estimated Altitude', 'Apogee', 'Barometer Altitude', 'Location', 'best');
+title('Estimated States from ' + filter_name, 'FontWeight', 'bold');
+legend('Estimated Altitude', 'Predicted Apogee', 'Barometer Altitude', 'Location', 'best');
 ylim([200, 900]);
 grid on;
+grid minor;
 hold off;
 
 % Velocity plot
@@ -28,9 +30,9 @@ plot(times, x_est(2,:), 'Color', [0, 0.4470, 0.7410], 'LineWidth', 1.5); % Blue
 hold on;
 xlabel('Time (s)', 'FontWeight', 'bold');
 ylabel('Velocity (m/s)', 'FontWeight', 'bold');
-title('Estimated Velocity', 'FontWeight', 'bold');
 legend('Estimated Velocity', 'Location', 'best');
 grid on;
+grid minor;
 hold off;
 
 % Acceleration plot
@@ -40,10 +42,10 @@ hold on;
 scatter(data_struct.timestamp, data_struct.imu_accZ - 9.81, 10, 'x', 'MarkerEdgeColor', [0.9290, 0.6940, 0.1250]); % Orange
 xlabel('Time (s)', 'FontWeight', 'bold');
 ylabel('Acceleration (\(m/s^2\))', 'FontWeight', 'bold');
-title('Estimated Acceleration vs Actual Acceleration', 'FontWeight', 'bold');
 legend('Estimated Acceleration', 'IMU Acceleration', 'Location', 'best');
 yline(-9.81);
 grid on;
+grid minor;
 hold off;
 
 % Ballistic Coefficient plot
@@ -51,9 +53,9 @@ ax4 = nexttile;
 plot(times, x_est(4,:), 'Color', [0, 0.4470, 0.7410], 'LineWidth', 1.5); % Blue
 hold on;
 xlabel('Time (s)', 'FontWeight', 'bold');
-ylabel('Ballistic Coefficient', 'FontWeight', 'bold');
-title('Estimated Ballistic Coefficient', 'FontWeight', 'bold');
+ylabel('Ballistic Coefficient ($kg/m^2$)', 'FontWeight', 'bold');
 grid on;
+grid minor;
 hold off;
 
 % Link x-axes
@@ -79,9 +81,9 @@ plot(apogee_log(1,:), apogee_error, 'Color', [0, 0.4470, 0.7410], 'LineWidth', 1
 
 % Add labels and title
 xlabel('Time (s)', 'FontWeight', 'bold');
-ylabel('Apogee Prediction Error', 'FontWeight', 'bold');
-title('Predicted Apogee Error with Standard Deviations', 'FontWeight', 'bold');
-legend('3 STD', '2 STD', '1 STD', 'Predicted Apogee Error', 'Location', 'best');
+ylabel('Apogee Prediction Error (m)', 'FontWeight', 'bold');
+title('Predicted Apogee Error with Standard Deviations from ' + filter_name, 'FontWeight', 'bold');
+legend('\(3\sigma\)', '\(2\sigma\)', '\(\sigma\)', 'Predicted Apogee Error', 'Location', 'best');
 grid on;
 grid minor;
 yline(0, '--k', 'LineWidth', 1.5); % Black dashed line
