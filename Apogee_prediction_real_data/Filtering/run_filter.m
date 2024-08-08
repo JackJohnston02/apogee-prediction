@@ -41,8 +41,8 @@ z_a = data_struct.imu_accZ(1);
 
 initial_state = [z_b, 0, z_a, 1300]';
 initial_covariance = eye(4);
-sigma_Q = 1;
-sigma_Q_Cb = 10;
+sigma_Q = 0.1;
+sigma_Q_Cb = 100;
 measurement_noise_bar = 0.5744578867366569;
 measurement_noise_acc = 0.006942717204787825;
 t = 0;

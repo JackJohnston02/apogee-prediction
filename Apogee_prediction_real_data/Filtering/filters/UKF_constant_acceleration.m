@@ -50,8 +50,7 @@ classdef UKF_constant_acceleration
             dt = t_current - obj.t_last_update;
             obj.t_last_update = t_current;
 
-            % Update the process noise matrix Q
-            obj.Q = obj.calculateProcessNoise(dt);
+
 
             % Generate sigma points
             [sigma_points, weights_mean, weights_cov] = obj.generateSigmaPoints(obj.x, obj.P);
@@ -63,6 +62,8 @@ classdef UKF_constant_acceleration
 
             % Calculate the covariance of the sigma points adding the
             % process noise as well
+            % Update the process noise matrix Q
+            obj.Q = obj.calculateProcessNoise(dt);
             predicted_covariance = obj.calculateCovariance(predicted_sigma_points, predicted_state, weights_cov, obj.Q);
 
             obj.x = predicted_state;
@@ -133,7 +134,7 @@ classdef UKF_constant_acceleration
             predicted_measurement_sigma_points = zeros(1, size(sigma_points, 2));
             for i = 1:size(sigma_points, 2)
                 x = sigma_points(:, i);
-                z = x(3);  % Assuming the accelerometer measures acceleration
+                z = x(3); 
                 predicted_measurement_sigma_points(:, i) = z;
             end
         end
@@ -159,7 +160,7 @@ classdef UKF_constant_acceleration
             predicted_measurement_sigma_points = zeros(1, size(sigma_points, 2));
             for i = 1:size(sigma_points, 2)
                 x = sigma_points(:, i);
-                z = x(1);  % Assuming the barometer measures altitude
+                z = x(1); 
                 predicted_measurement_sigma_points(:, i) = z;
             end
         end
