@@ -24,6 +24,12 @@ filename = 'data/owen.csv';
 %% Define all the filters here, need to add filter names to the initialise filter switchcase in run_filter.m
 filters = ["UKF_constant_acceleration", "UKF_constant_Cb", "EKF_constant_acceleration", "EKF_constant_Cb", "All"];
 
+%% Filter parameters
+sigma_Q = 0.1;
+sigma_Q_Cb = 100;
+measurement_noise_bar = 0.5744578867366569;
+measurement_noise_acc = 0.006942717204787825;
+
 for i = 1:length(filters)
     disp(i + " for " + filters(i))
 end
@@ -36,10 +42,10 @@ if filter_choice == "All"
         filter_type = filters(i);
         run("run_filter.m");
     end
+    run("comparison_plotting.m")
 else
     filter_type = filter_choice;
     run("run_filter.m")
 end
-
 
 disp("Finished")

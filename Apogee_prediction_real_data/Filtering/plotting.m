@@ -87,7 +87,7 @@ legend('\(3\sigma\)', '\(2\sigma\)', '\(\sigma\)', 'Predicted Apogee Error', 'Lo
 grid on;
 grid minor;
 yline(0, '--k', 'LineWidth', 1.5); % Black dashed line
-ylim([-100, 100]);
+ylim([-50, 50]);
 xlim([9, 17.65]);
 hold off;
 

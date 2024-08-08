@@ -41,10 +41,7 @@ z_a = data_struct.imu_accZ(1);
 
 initial_state = [z_b, 0, z_a, 1300]';
 initial_covariance = eye(4);
-sigma_Q = 0.1;
-sigma_Q_Cb = 100;
-measurement_noise_bar = 0.5744578867366569;
-measurement_noise_acc = 0.006942717204787825;
+
 t = 0;
 
 %% Initialise filter object
@@ -98,11 +95,11 @@ while t < max(data_struct.timestamp)
         k = k + 1; % Increment measurement index
     end
 
-    % Record the estimated states
-    x_est(:, end + 1) = filter.x;
 
     [apogee, apogee_covariance] = filter.get_apogee();
 
+    % Record the estimated states and estimated apogee
+    x_est(:, end + 1) = [filter.x; apogee];
     apogee_log = [apogee_log,[t, apogee, apogee_covariance]'];
 end
 
