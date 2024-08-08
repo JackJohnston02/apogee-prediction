@@ -1,5 +1,3 @@
-disp("Running Filter:" + filter_type);
-
 % Load data
 data = readtable(filename);
 data = data(1:end, :);
@@ -69,8 +67,13 @@ end
 dt = 0.01;
 k = 1;
 
+figure_waitbar = waitbar(0,'Please wait...');
 while t < max(data_struct.timestamp)
-    disp(string(round((t/max(data_struct.timestamp)*100),2)) + "% completed");
+
+    frac_complete = t/max(data_struct.timestamp);
+    % Waitbar
+    waitbar(frac_complete,figure_waitbar,"Running " + filter_name);
+    
     
     t = t + dt; % Increment time
     times = [times, t]; % Store current time
@@ -102,6 +105,8 @@ while t < max(data_struct.timestamp)
     x_est(:, end + 1) = [filter.x; apogee];
     apogee_log = [apogee_log,[t, apogee, apogee_covariance]'];
 end
+waitbar(frac_complete,figure_waitbar,"Plotting " + filter_name);
+close(figure_waitbar);
 
 %% Exporting the estimated states
 exportMatrix = [times', x_est(:,:)'];

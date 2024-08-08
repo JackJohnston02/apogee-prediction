@@ -5,7 +5,7 @@ set(groot,'defaultLegendInterpreter','latex');
 
 
 % Plotting states
-figure;
+figure('Name', filter_name + " Estimated States");
 tiledlayout(4,1);
 
 % Altitude plot
@@ -72,7 +72,7 @@ upper3 = apogee_error + 3 * apogee_std;
 lower3 = apogee_error - 3 * apogee_std;
 
 % Create the figure
-figure;
+figure('Name',filter_name + " Predicted Apogee");
 hold on;
 fill([apogee_log(1,:), fliplr(apogee_log(1,:))], [upper3, fliplr(lower3)], [0.9, 0.9, 0.9], 'EdgeColor', 'none', 'FaceAlpha', 0.3);
 fill([apogee_log(1,:), fliplr(apogee_log(1,:))], [upper2, fliplr(lower2)], [0.7, 0.7, 0.7], 'EdgeColor', 'none', 'FaceAlpha', 0.5);

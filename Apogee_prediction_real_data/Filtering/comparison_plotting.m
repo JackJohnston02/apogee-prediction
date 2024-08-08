@@ -76,7 +76,7 @@ for i = 1:length(filters)
 end
 
 % Plot Ballistic Coefficient
-figure('Position', [100, 100, 700, 500]);
+figure('Position', [100, 100, 700, 500], "Name", "Ballistic Coefficient Comparison Plot");
 
 for i = 1:length(filters)
     plot(all_times{i}, all_x_est_smooth{i}, [markers{i}, '-'], ...
@@ -109,7 +109,7 @@ set(gcf, 'Color', 'w');
 saveas(gcf, 'plots/IAC_Cb_Plot_IAC.png');
 %% Plot Estimated Apogee
 % Plot Estimated Apogee
-figure('Position', [100, 100, 700, 500]);
+figure('Position', [100, 100, 700, 500], "Name", "Predicted Apogee Comparison Plot");
 
 % Plot the estimated apogee data
 for i = 1:length(filters)
