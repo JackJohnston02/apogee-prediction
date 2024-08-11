@@ -105,15 +105,13 @@ classdef EKF_constant_Cb
 
             % Adjust measurement for gravity
             measurement = measurement + obj.get_gravity(obj.x(1));
-            
+            obj.t_last_update = t_current;
 
             % Compute jacobian of the measurement model
             H = [0, 0, 1, 0];
 
             % Prediction step
-            [predicted_state, predicted_covariance] = obj.processModel(obj.x, obj.P, t_current - obj.t_last_update);
-            obj.t_last_update = t_current;
-      
+            %[predicted_state, predicted_covariance] = obj.processModel(obj.x, obj.P, t_current - obj.t_last_update);
 
             % Calculate kalman gain
             S = H * predicted_covariance * H' + obj.R_acc;

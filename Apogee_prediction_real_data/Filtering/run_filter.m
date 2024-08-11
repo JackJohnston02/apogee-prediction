@@ -117,8 +117,6 @@ run("plotting.m")
 function cropped_struct = crop_data_struct(data_struct, start_time, end_time)
     % Find the indices where the timestamp is within the specified range
     valid_indices = data_struct.timestamp >= start_time & data_struct.timestamp <= end_time;
-    
-    % Initialize the cropped struct
     cropped_struct = struct();
 
     % Iterate over each field in the struct and crop the data

@@ -13,15 +13,12 @@ close all; % Uncomment if comparing plots
 addpath("filters\")
 filename = 'data/owen.csv';
 
-%% Select filter type
-% UKF_constant_acceleration
-% UKF_constant_Cb
 
 %% Define all the filters here, need to add filter names to the initialise filter switchcase in run_filter.m
 filters = ["UKF_constant_acceleration", "UKF_constant_Cb", "EKF_constant_acceleration", "EKF_constant_Cb", "All"];
 
 %% Filter parameters
-sigma_Q = 0.4;
+sigma_Q = 0.1;
 sigma_Q_Cb = 100;
 % For optimal 
     % CCb UKF:
