@@ -120,14 +120,14 @@ hline = yline(true_apogee_x, '--k', 'LineWidth', 1.5);
 
 % Add labels, legend, and customize the apogee estimate plot
 xlabel('Time (s)', 'FontSize', 12, 'FontWeight', 'bold', 'FontName', 'Arial');
-ylabel('Estimated Apogee Error $(m)$', 'FontSize', 12, 'FontWeight', 'bold', 'FontName', 'Arial');
+ylabel('Predicted Apogee Error $(m)$', 'FontSize', 12, 'FontWeight', 'bold', 'FontName', 'Arial');
 
 % Create legend including the vertical line
 legend([plot_handles_apogee, hline], [strrep(filters, '_', '\_'), 'True Apogee'], ...
     'Location', 'best', 'FontSize', 10, 'FontName', 'Arial');
 
 % Ensure the legend has a box
-set(lgd, 'Box', 'on', 'EdgeColor', 'k'); % 'EdgeColor', 'k' ensures the box is black
+set(legend, 'Box', 'on', 'EdgeColor', 'k'); % 'EdgeColor', 'k' ensures the box is black
 
 xlim([x_min, x_max]);
 ylim([y_min_apogee, y_max_apogee]);

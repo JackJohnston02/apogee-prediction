@@ -68,9 +68,20 @@ classdef EKF_constant_Cb
 
 
             if g - x(3) > 0 % Model for ballistic state - constant ballistic coefficient
+                g_0 = -9.80665; % Standard gravity
+                R_e = 6371000; % Earth radius
+                p_0 = 101325; % Standard sea level atmospheric pressure
+                M = 0.0289652; % Molar mass of dry air
+                R = 8.31445; % Ideal gas constant
+                T_0 = 288.15; % Standard sea level temperature
+                L = 0.0065; % Temperature lapse rate
+                
+                df3_dx1 = - (2*R_e^2*g_0)/(R_e + x(1))^3 - (M*p_0*x(2)^2*((L*((M*R_e^2*g_0)/(L*R*(R_e + x(1))^2) + 1))/(T_0*(1 - (L*x(1))/T_0)^((M*R_e^2*g_0)/(L*R*(R_e + x(1))^2) + 2)) + (2*M*R_e^2*g_0*log(1 - (L*x(1))/T_0))/(L*R*(R_e + x(1))^3*(1 - (L*x(1))/T_0)^((M*R_e^2*g_0)/(L*R*(R_e + x(1))^2) + 1))))/(2*R*T_0*x(4));
+ 
+                
                 F = [1, dt, 0.5*dt^2, 0;
                      0, 1, dt, 0;
-                     0, -(rho * x(2))/(x(4)), 0, (rho * x(2)^2)/(2 * x(4)^2);
+                     df3_dx1, -(rho * x(2))/(x(4)), 0, (rho * x(2)^2)/(2 * x(4)^2);
                      0, 0, 0, 1];
                 u = obj.get_gravity(x(1)); %Ballisitic model absorbs gravitaty as an error if not accounted for here
 
@@ -93,7 +104,7 @@ classdef EKF_constant_Cb
             % Accelerometer update step
 
             % Adjust measurement for gravity
-            measurement = measurement - 9.81;%+ obj.get_gravity(obj.x(1));
+            measurement = measurement + obj.get_gravity(obj.x(1));
             obj.t_last_update = t_current;
 
             % Compute jacobian of the measurement model

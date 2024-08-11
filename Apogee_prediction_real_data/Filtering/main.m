@@ -1,14 +1,10 @@
-4%% TODO
-% Add EKF 
-    % CCb
-    % Ca
+% TODO
 % Add Cubature
     % CCb
     % Ca
 
-% Add iterative script for all filters
-% Add comparison plotting for all filters
-% Remove the subsequent values from the ZOH sensor data
+% Remove the subsequent values from the ZOH sensor data - might have done
+% this?
   
 
 %%3 Tidy up
@@ -25,8 +21,16 @@ filename = 'data/owen.csv';
 filters = ["UKF_constant_acceleration", "UKF_constant_Cb", "EKF_constant_acceleration", "EKF_constant_Cb", "All"];
 
 %% Filter parameters
-sigma_Q = 0.1; %0.1
-sigma_Q_Cb = 100; %100
+sigma_Q = 0.4;
+sigma_Q_Cb = 100;
+% For optimal 
+    % CCb UKF:
+        % sigma_Q = 0.1
+        % sigma_Q_Cb = 100
+    % CCb EKF:
+        % sigma_Q = 
+        % sigma_Q_Cb = 
+
 measurement_noise_bar = 0.5744578867366569;
 measurement_noise_acc = 0.006942717204787825;
 
