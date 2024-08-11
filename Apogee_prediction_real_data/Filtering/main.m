@@ -1,4 +1,4 @@
-%% TODO
+4%% TODO
 % Add EKF 
     % CCb
     % Ca
@@ -11,7 +11,7 @@
 % Remove the subsequent values from the ZOH sensor data
   
 
-%% Tidy up
+%%3 Tidy up
 clear all;
 close all; % Uncomment if comparing plots
 addpath("filters\")
@@ -25,8 +25,8 @@ filename = 'data/owen.csv';
 filters = ["UKF_constant_acceleration", "UKF_constant_Cb", "EKF_constant_acceleration", "EKF_constant_Cb", "All"];
 
 %% Filter parameters
-sigma_Q = 0.1;
-sigma_Q_Cb = 100;
+sigma_Q = 0.1; %0.1
+sigma_Q_Cb = 100; %100
 measurement_noise_bar = 0.5744578867366569;
 measurement_noise_acc = 0.006942717204787825;
 

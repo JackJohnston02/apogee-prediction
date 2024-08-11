@@ -18,7 +18,7 @@ classdef EKF_constant_Cb
         function obj = EKF_constant_Cb(initial_state, initial_covariance, sigma_Q, sigma_Q_Cb, measurement_noise_acc, measurement_noise_bar, t)
             obj.x = initial_state;
             obj.P = initial_covariance;
-            obj.Q = obj.calculateProcessNoise(sigma_Q, sigma_Q_Cb);
+            obj.Q = sigma_Q * diag([1e-3, 1e-3, 1e-2, 1e1]);
             obj.R_acc = measurement_noise_acc;
             obj.R_bar = measurement_noise_bar;
             obj.t_last_update = t;
@@ -31,19 +31,13 @@ classdef EKF_constant_Cb
             % EKF prediction step
             dt = t_current - obj.t_last_update;
             obj.t_last_update = t_current;
-
+            obj.Q = calculateProcessNoise(obj, dt);
             % Propagate the state and covariance
             [predicted_state, predicted_covariance] = obj.processModel(obj.x, obj.P, dt);
 
             % Update state and covariance with process noise
             obj.x = predicted_state;
-
-            % Loosely update the ballistic coefficient when in ballistic
-            % phase
-            if obj.x(3) < obj.get_gravity(obj.x(1))
-                obj.x(4) = (obj.get_density(obj.x(1)) * obj.x(2)^2) / (2 * (abs(obj.x(3)) + obj.get_gravity(obj.x(1))));
-            end
-
+            
             obj.P = predicted_covariance + obj.Q;
         end
 
@@ -53,9 +47,10 @@ classdef EKF_constant_Cb
             
             propagated_x = obj.x;
             propagated_P = obj.P;
-
-            while propagated_x(2) > 0 && propagated_x(3) < 0
+            Q_apa = obj.calculateProcessNoise(obj.dt_apa);
+            while propagated_x(2) > 0 && propagated_x(3) < obj.get_gravity(propagated_x(1))
                 [propagated_x, propagated_P] = obj.processModel(propagated_x, propagated_P, obj.dt_apa);
+                propagated_P = propagated_P + Q_apa;
             end
 
             apogee = propagated_x(1);
@@ -64,25 +59,41 @@ classdef EKF_constant_Cb
 
         function [new_x, new_P] = processModel(obj, x, P, dt)
             % Process model to propagate state and covariance
+            
+            % Get rho and g
+            rho = obj.get_density(x(1));
+            g = obj.get_gravity(x(1));
+            B = [0,0,1,0]';
+            u = 0; 
 
-            % Define the state transition matrix (Jacobian)
-            F = [1, dt, 0.5*dt^2, 0;
-                 0, 1, dt, 0;
-                 0, 0, 1, 0;
-                 0, 0, 0, 1];
+
+            if g - x(3) > 0 % Model for ballistic state - constant ballistic coefficient
+                F = [1, dt, 0.5*dt^2, 0;
+                     0, 1, dt, 0;
+                     0, -(rho * x(2))/(x(4)), 0, (rho * x(2)^2)/(2 * x(4)^2);
+                     0, 0, 0, 1];
+                u = obj.get_gravity(x(1)); %Ballisitic model absorbs gravitaty as an error if not accounted for here
+
+            else % Model for non-ballistic state - constant acceleration
+                 F = [1, dt, 0.5*dt^2, 0;
+                      0, 1, dt, 0;
+                      0, 0, 1, 0;
+                      0, 0, 0, 1];
+                 u = 0;
+            end
 
             % Propagate state
-            new_x = F * x;
+            new_x = F * x + B * u;
 
             % Update covariance matrix
-            new_P = F * P * F';
+            new_P = F * P * F' + obj.Q;
         end
 
         function [obj, updated_state, updated_covariance] = updateAccelerometer(obj, measurement, t_current)
             % Accelerometer update step
 
             % Adjust measurement for gravity
-            measurement = measurement + obj.get_gravity(obj.x(1));
+            measurement = measurement - 9.81;%+ obj.get_gravity(obj.x(1));
             obj.t_last_update = t_current;
 
             % Compute jacobian of the measurement model
@@ -126,9 +137,12 @@ classdef EKF_constant_Cb
             obj.P = updated_covariance;
         end
 
-        function Q = calculateProcessNoise(obj, sigma_Q, sigma_Q_Cb)
+        function Q = calculateProcessNoise(obj, dt)
             % Calculate the process noise covariance matrix Q
-            Q = sigma_Q * diag([1e-3, 1e-3, 1e-2, sigma_Q_Cb]);
+            Q = [1/4*dt^4*obj.sigma_Q^2, 1/2*dt^3*obj.sigma_Q^2, 1/2*dt^2*obj.sigma_Q^2, 0;
+                 1/2*dt^3*obj.sigma_Q^2,    dt^2*obj.sigma_Q^2,    dt*obj.sigma_Q^2, 0;
+                 1/2*dt^2*obj.sigma_Q^2,      dt*obj.sigma_Q^2,          obj.sigma_Q^2, 0;
+                 0, 0, 0, obj.sigma_Q_Cb^2];
         end
 
         function rho = get_density(obj, h)

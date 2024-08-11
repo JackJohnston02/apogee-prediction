@@ -14,7 +14,7 @@ hold on;
 plot(times, x_est(1,:), 'Color', [0, 0.4470, 0.7410], 'LineWidth', 1.5); % Blue
 scatter(apogee_log(1,:), apogee_log(2,:), 36, 'x', 'MarkerEdgeColor', [0.8500, 0.3250, 0.0980]); % Orange
 scatter(data_struct.timestamp, data_struct.baro_altitude, 10, 'x', 'MarkerEdgeColor', [0.9290, 0.6940, 0.1250]); % Yellow
-yline(max(x_est(1,:)), '--k', 'LineWidth', 1.5); % Black dashed line
+yline(791.5, '--k', 'LineWidth', 1.5); % Black dashed line
 xlabel('Time (s)', 'FontWeight', 'bold');
 ylabel('Altitude (m)', 'FontWeight', 'bold');
 title('Estimated States from ' + filter_name, 'FontWeight', 'bold');
@@ -62,7 +62,7 @@ hold off;
 linkaxes([ax1, ax2, ax3, ax4], 'x');
 
 % Calculate bounds for 1, 2, and 3 standard deviations
-apogee_error = apogee_log(2,:) - max(x_est(1,:));
+apogee_error = apogee_log(2,:) - 791.5;
 apogee_std = sqrt(apogee_log(3,:));
 upper1 = apogee_error + apogee_std;
 lower1 = apogee_error - apogee_std;
