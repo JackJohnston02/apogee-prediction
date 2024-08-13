@@ -37,8 +37,8 @@ apogee_log = [];
 z_b = data_struct.baro_altitude(1);
 z_a = data_struct.imu_accZ(1);
 
-initial_state = [z_b, 0, z_a, 1300]';
-initial_covariance = eye(4);
+initial_state = [z_b, 0, 0, 1300]';
+initial_covariance = 0.001 * eye(4);
 
 t = 0;
 

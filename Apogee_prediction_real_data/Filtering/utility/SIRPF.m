@@ -29,7 +29,7 @@ classdef SIRPF
             obj.N = N;
             obj.Q = Q;
             obj.R = R;
-            % State and measurement dimensions
+            % State and measurement dimensionsure
             obj.n = size(Pi,1);
             obj.m = size(R,1);
 
