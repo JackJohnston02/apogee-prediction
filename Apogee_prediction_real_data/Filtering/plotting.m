@@ -63,7 +63,7 @@ linkaxes([ax1, ax2, ax3, ax4], 'x');
 
 % Calculate bounds for 1, 2, and 3 standard deviations
 apogee_error = apogee_log(2,:) - 791.5;
-apogee_std = sqrt(apogee_log(3,:));
+apogee_std = apogee_log(3,:);
 upper1 = apogee_error + apogee_std;
 lower1 = apogee_error - apogee_std;
 upper2 = apogee_error + 2 * apogee_std;

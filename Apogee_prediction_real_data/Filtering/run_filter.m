@@ -60,8 +60,8 @@ switch filter_type
         filter = EKF_constant_Cb(initial_state, initial_covariance, sigma_Q, sigma_Q_Cb, measurement_sigma_acc, measurement_sigma_bar, t);
         filter_name = "Constant Ballistic Coefficient EKF";
     
-    case "Particle_Filter_constant_acceleration"
-        filter = Particle_Filter_constant_acceleration(initial_state, initial_covariance, sigma_Q, sigma_Q_Cb, measurement_sigma_acc, measurement_sigma_bar, t);
+    case "SIRPF_constant_acceleration"
+        filter = SIRPF_constant_acceleration(initial_state, initial_covariance, sigma_Q, sigma_Q_Cb, measurement_sigma_acc, measurement_sigma_bar, t);
         filter_name = "Constant Acceleration Particle Filter";
     otherwise
         % Throw error if invalid filter is selected
@@ -103,11 +103,12 @@ while t < max(data_struct.timestamp)
     end
 
 
-    [apogee, apogee_covariance] = filter.get_apogee();
+    [apogee, apogee_std] = filter.get_apogee();
 
     % Record the estimated states and estimated apogee
     x_est(:, end + 1) = [filter.x; apogee];
-    apogee_log = [apogee_log,[t, apogee, apogee_covariance]'];
+    
+    apogee_log = [apogee_log,[t, apogee, apogee_std]'];
 end
 waitbar(frac_complete,figure_waitbar,"Plotting " + filter_name);
 close(figure_waitbar);

@@ -77,7 +77,7 @@ classdef UKF_constant_Cb
                  0, 0, 0, obj.sigma_Q_Cb^2];
         end
 
-        function [apogee, apogee_cov] = get_apogee(obj)
+        function [apogee, apogee_std] = get_apogee(obj)
             %todo something wrong here, it seems to get stuck in the loop
             propagated_x = obj.x;
             propagated_P = obj.P;
@@ -98,7 +98,7 @@ classdef UKF_constant_Cb
             end
 
             apogee = propagated_x(1);
-            apogee_cov = propagated_P(1,1);
+            apogee_std = sqrt(propagated_P(1,1));
 
         end
 

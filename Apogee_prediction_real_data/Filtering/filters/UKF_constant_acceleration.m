@@ -78,7 +78,7 @@ classdef UKF_constant_acceleration
                  0, 0, 0, obj.sigma_Q_Cb^2];
         end
 
-        function [apogee, apogee_cov] = get_apogee(obj)
+        function [apogee, apogee_std] = get_apogee(obj)
             propagated_x = obj.x;
             propagated_P = obj.P;
 
@@ -97,7 +97,7 @@ classdef UKF_constant_acceleration
             end
 
             apogee = propagated_x(1);
-            apogee_cov = propagated_P(1,1);
+            apogee_std = sqrt(propagated_P(1,1));
         end
 
         function [obj, updated_state, updated_covariance] = updateAccelerometer(obj, measurement, t_current)

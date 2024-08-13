@@ -41,7 +41,7 @@ classdef EKF_constant_Cb
             obj.P = predicted_covariance + obj.Q;
         end
 
-        function [apogee, apogee_cov] = get_apogee(obj)
+        function [apogee, apogee_std] = get_apogee(obj)
             % Predicts apogee and associated uncertainty using multiple
             % propagations through process model
             
@@ -54,7 +54,7 @@ classdef EKF_constant_Cb
             end
 
             apogee = propagated_x(1);
-            apogee_cov = propagated_P(1,1);
+            apogee_std = sqrt(propagated_P(1,1));
         end
 
         function [new_x, new_P] = processModel(obj, x, P, dt)
