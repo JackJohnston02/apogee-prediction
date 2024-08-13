@@ -45,20 +45,24 @@ t = 0;
 %% Initialise filter object
 switch filter_type
     case "UKF_constant_acceleration"
-        filter = UKF_constant_acceleration(initial_state, initial_covariance, sigma_Q, sigma_Q_Cb, measurement_noise_acc, measurement_noise_bar, t);
+        filter = UKF_constant_acceleration(initial_state, initial_covariance, sigma_Q, sigma_Q_Cb, measurement_sigma_acc, measurement_sigma_bar, t);
         filter_name = "Constant Acceleration UKF";
         
     case "UKF_constant_Cb"
-        filter = UKF_constant_Cb(initial_state, initial_covariance, sigma_Q, sigma_Q_Cb, measurement_noise_acc, measurement_noise_bar, t);
+        filter = UKF_constant_Cb(initial_state, initial_covariance, sigma_Q, sigma_Q_Cb, measurement_sigma_acc, measurement_sigma_bar, t);
         filter_name = "Constant Ballistic Coefficient UKF";
     
     case "EKF_constant_acceleration"
-        filter = EKF_constant_acceleration(initial_state, initial_covariance, sigma_Q, sigma_Q_Cb, measurement_noise_acc, measurement_noise_bar, t);
+        filter = EKF_constant_acceleration(initial_state, initial_covariance, sigma_Q, sigma_Q_Cb, measurement_sigma_acc, measurement_sigma_bar, t);
         filter_name = "Constant Acceleration EKF";
 
     case "EKF_constant_Cb"
-        filter = EKF_constant_Cb(initial_state, initial_covariance, sigma_Q, sigma_Q_Cb, measurement_noise_acc, measurement_noise_bar, t);
+        filter = EKF_constant_Cb(initial_state, initial_covariance, sigma_Q, sigma_Q_Cb, measurement_sigma_acc, measurement_sigma_bar, t);
         filter_name = "Constant Ballistic Coefficient EKF";
+    
+    case "Particle_Filter_constant_acceleration"
+        filter = Particle_Filter_constant_acceleration(initial_state, initial_covariance, sigma_Q, sigma_Q_Cb, measurement_sigma_acc, measurement_sigma_bar, t);
+        filter_name = "Constant Acceleration Particle Filter";
     otherwise
         % Throw error if invalid filter is selected
         error("Invalid choice of filter")

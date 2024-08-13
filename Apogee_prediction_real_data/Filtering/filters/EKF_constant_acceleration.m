@@ -9,8 +9,8 @@ classdef EKF_constant_acceleration
         x               % State vector [altitude, velocity, acceleration, ballistic coefficient]
         P               % State covariance matrix
         Q               % Process noise covariance matrix
-        R_acc           % Accelerometer measurement noise covariance matrix
-        R_bar           % Barometer measurement noise covariance matrix
+        R_acc           % Accelerometer measurement noise variance
+        R_bar           % Barometer measurement noise variance
         t_last_update   % Time of last update
         dt_apa          % Timestep of the apogee prediction method
         sigma_Q         % Standard deviation of process noise
@@ -18,12 +18,12 @@ classdef EKF_constant_acceleration
     end
 
     methods
-        function obj = EKF_constant_acceleration(initial_state, initial_covariance, sigma_Q, sigma_Q_Cb, measurement_noise_acc, measurement_noise_bar, t)
+        function obj = EKF_constant_acceleration(initial_state, initial_covariance, sigma_Q, sigma_Q_Cb, measurement_sigma_acc, measurement_sigma_bar, t)
             obj.x = initial_state;
             obj.P = initial_covariance;
             obj.Q = sigma_Q * diag([1e-3, 1e-3, 1e-2, 1e1]);
-            obj.R_acc = measurement_noise_acc;
-            obj.R_bar = measurement_noise_bar;
+            obj.R_acc = measurement_sigma_acc^2;
+            obj.R_bar = measurement_sigma_bar^2;
             obj.t_last_update = t;
             obj.dt_apa = 0.01;
             obj.sigma_Q = sigma_Q;
