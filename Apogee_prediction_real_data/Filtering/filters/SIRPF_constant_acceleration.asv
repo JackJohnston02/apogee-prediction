@@ -64,7 +64,6 @@ classdef SIRPF_constant_acceleration
         function [obj, state, covariance] = predict(obj, t_current)
             dt = t_current - obj.t_last_update;
             obj.t_last_update = t_current;
-
             for i = 1:obj.N
                 obj.xpk(:, i) = mvnrnd(obj.processModel(obj.xpk_1(:,i), dt), obj.calculateProcessNoise(dt));
             end
@@ -111,7 +110,7 @@ classdef SIRPF_constant_acceleration
 
         function [obj, updated_state, updated_covariance] = updateAccelerometer(obj, measurement, t_current)
             yk = measurement - 9.81;
-            obj = obj.predict(t_current);
+
 
             for i = 1:obj.N
                 obj.wpk(i) = mvnpdf((yk - obj.xpk(3,i)), zeros(1, 1), obj.R_acc);
@@ -137,7 +136,8 @@ classdef SIRPF_constant_acceleration
 
         function [obj, updated_state, updated_covariance] = updateBarometer(obj, measurement, t_current)
             yk = measurement;
-            obj = obj.predict(t_current);
+            
+
 
             for i = 1:obj.N
                 obj.wpk(i) = mvnpdf((yk - obj.xpk(1,i)), zeros(1, 1), obj.R_baro);
@@ -170,7 +170,6 @@ classdef SIRPF_constant_acceleration
             N = length(obj.wpk);
             switch obj.resampling_strategy
                 case 'multinomial'
-                    disp(obj.wpk)
                     idx = randsample(1:N, N,'true', obj.wpk);
 
                 case 'systematic'
