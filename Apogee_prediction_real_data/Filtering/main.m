@@ -19,7 +19,7 @@ filename = 'data/owen.csv';
 filters = ["UKF_constant_acceleration", "UKF_constant_Cb", "EKF_constant_acceleration", "EKF_constant_Cb", "SIRPF_constant_acceleration", "All"];
 
 %% Filter parameters
-sigma_Q = 0.01;
+sigma_Q = 10;
 sigma_Q_Cb = 100;
 % For optimal 
     % CCb UKF:
@@ -30,7 +30,7 @@ sigma_Q_Cb = 100;
         % sigma_Q_Cb = 
 
 measurement_sigma_bar = 0.5744578867366569; % Barometer measurement STD
-measurement_sigma_acc = 0.04;%0.006942717204787825; % Accelerometer measurement STD
+measurement_sigma_acc = 0.006942717204787825; % Accelerometer measurement STD
 
 for i = 1:length(filters)
     disp(i + " for " + filters(i))

@@ -30,7 +30,7 @@ classdef SIRPF_constant_acceleration
 
         function obj = SIRPF_constant_acceleration(initial_state, initial_covariance, sigma_Q, sigma_Q_Cb, measurement_sigma_acc, measurement_sigma_bar, t)
             % Set the filter parameters
-            obj.N = 10;
+            obj.N = 100;
             obj.resampling_percentage = 1;
             obj.resampling_strategy = "multinomial"; %multinomial, systematic, random_uniform, stratified
             obj.Nthresh = obj.resampling_percentage * obj.N;
@@ -38,8 +38,8 @@ classdef SIRPF_constant_acceleration
             % Noise
             obj.sigma_Q = sigma_Q;
             obj.sigma_Q_Cb = sigma_Q_Cb;
-            obj.R_baro = measurement_sigma_acc^2;
-            obj.R_acc = measurement_sigma_bar^2;
+            obj.R_baro = measurement_sigma_bar^2;
+            obj.R_acc = measurement_sigma_acc^2;
 
 
             obj.t_last_update = t;
@@ -64,12 +64,12 @@ classdef SIRPF_constant_acceleration
         function [obj, state, covariance] = predict(obj, t_current)
             dt = t_current - obj.t_last_update;
             obj.t_last_update = t_current;
+            
+            obj.Q = obj.calculateProcessNoise(dt);
 
             for i = 1:obj.N
-                obj.xpk(:, i) = mvnrnd(obj.processModel(obj.xpk_1(:,i), dt), obj.calculateProcessNoise(dt));
+                obj.xpk(:, i) = mvnrnd(obj.processModel(obj.xpk_1(:,i), dt), obj.Q);
             end
-
-            obj.wpk = obj.wpk./sum(obj.wpk);
 
             % Calculate the weighted mean
             obj.x = obj.xpk * obj.wpk;
@@ -115,6 +115,14 @@ classdef SIRPF_constant_acceleration
 
             for i = 1:obj.N
                 obj.wpk(i) = mvnpdf((yk - obj.xpk(3,i)), zeros(1, 1), obj.R_acc);
+                if isnan(obj.wpk(i))
+                    disp(yk - obj.xpk(3,i))
+                    disp('GOT A NaN')
+                end
+                if obj.wpk(i) == 0
+                    disp(yk - obj.xpk(3,i))
+                    disp("GOT A ZERO")
+                end
             end
 
             % Normalise weights
@@ -141,6 +149,13 @@ classdef SIRPF_constant_acceleration
 
             for i = 1:obj.N
                 obj.wpk(i) = mvnpdf((yk - obj.xpk(1,i)), zeros(1, 1), obj.R_baro);
+                if isnan(obj.wpk(i))
+                    disp('Before Passed')
+                end
+                if obj.wpk(i) == 0
+                    disp("GOT A ZERO")
+                end
+
             end
 
             % Normalise weights
