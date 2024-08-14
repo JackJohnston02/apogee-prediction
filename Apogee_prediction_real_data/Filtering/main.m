@@ -19,7 +19,7 @@ filename = 'data/owen.csv';
 filters = ["UKF_constant_acceleration", "UKF_constant_Cb", "EKF_constant_acceleration", "EKF_constant_Cb", "SIRPF_constant_acceleration", "All"];
 
 %% Filter parameters
-sigma_Q = 10;
+sigma_Q = 0.1;
 sigma_Q_Cb = 100;
 % For optimal 
     % CCb UKF:

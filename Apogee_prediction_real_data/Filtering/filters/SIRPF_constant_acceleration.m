@@ -30,7 +30,7 @@ classdef SIRPF_constant_acceleration
 
         function obj = SIRPF_constant_acceleration(initial_state, initial_covariance, sigma_Q, sigma_Q_Cb, measurement_sigma_acc, measurement_sigma_bar, t)
             % Set the filter parameters
-            obj.N = 100;
+            obj.N = 10000;
             obj.resampling_percentage = 1;
             obj.resampling_strategy = "multinomial"; %multinomial, systematic, random_uniform, stratified
             obj.Nthresh = obj.resampling_percentage * obj.N;
@@ -98,7 +98,6 @@ classdef SIRPF_constant_acceleration
             xpk(3) = xpk_1(3);
             xpk(4) = xpk_1(4);
 
-            xpk = [xpk_1(1); xpk_1(2); xpk_1(3); xpk_1(4)];
         end
 
         function Q = calculateProcessNoise(obj, dt)
@@ -114,15 +113,7 @@ classdef SIRPF_constant_acceleration
             obj = obj.predict(t_current);
 
             for i = 1:obj.N
-                obj.wpk(i) = mvnpdf((yk - obj.xpk(3,i)), zeros(1, 1), obj.R_acc);
-                if isnan(obj.wpk(i))
-                    disp(yk - obj.xpk(3,i))
-                    disp('GOT A NaN')
-                end
-                if obj.wpk(i) == 0
-                    disp(yk - obj.xpk(3,i))
-                    disp("GOT A ZERO")
-                end
+                obj.wpk(i) = mvnpdf((yk - obj.xpk(3,i)), zeros(1, 1), obj.R_acc) + 1e-60; % TODO sort this line
             end
 
             % Normalise weights
@@ -148,14 +139,7 @@ classdef SIRPF_constant_acceleration
             obj = obj.predict(t_current);
 
             for i = 1:obj.N
-                obj.wpk(i) = mvnpdf((yk - obj.xpk(1,i)), zeros(1, 1), obj.R_baro);
-                if isnan(obj.wpk(i))
-                    disp('Before Passed')
-                end
-                if obj.wpk(i) == 0
-                    disp("GOT A ZERO")
-                end
-
+                obj.wpk(i) = mvnpdf((yk - obj.xpk(1,i)), zeros(1, 1), obj.R_baro) + 1e-60; % TODO sort this line;
             end
 
             % Normalise weights
@@ -185,7 +169,6 @@ classdef SIRPF_constant_acceleration
             N = length(obj.wpk);
             switch obj.resampling_strategy
                 case 'multinomial'
-                    disp(obj.wpk)
                     idx = randsample(1:N, N,'true', obj.wpk);
 
                 case 'systematic'
