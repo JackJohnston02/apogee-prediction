@@ -30,7 +30,7 @@ classdef SIRPF_constant_acceleration
 
         function obj = SIRPF_constant_acceleration(initial_state, initial_covariance, sigma_Q, sigma_Q_Cb, measurement_sigma_acc, measurement_sigma_bar, t)
             % Set the filter parameters
-            obj.N = 10000;
+            obj.N = 100000;
             obj.resampling_percentage = 1;
             obj.resampling_strategy = "multinomial"; %multinomial, systematic, random_uniform, stratified
             obj.Nthresh = obj.resampling_percentage * obj.N;
