@@ -26,7 +26,7 @@ for i = 1:length(fields)
 end
 
 % Crop data
-data_struct = crop_data_struct(data_struct, 0, 18);
+data_struct = crop_data_struct(data_struct, 0, 30);
 
 % Initialise logging arrays
 x_est = [];
@@ -37,8 +37,8 @@ apogee_log = [];
 z_b = data_struct.baro_altitude(1);
 z_a = data_struct.imu_accZ(1);
 
-initial_state = [z_b, 0, 0, 1300]';
-initial_covariance = 0.001 * eye(4);
+initial_state = [z_b, 0, 0, 1000]'; %% Cb_0 can be set "arbitrarily"
+initial_covariance = 0.01 * eye(4);
 
 t = 0;
 
@@ -80,7 +80,7 @@ dt = 0.01;
 k = 1;
 
 figure_waitbar = waitbar(0,'Please wait...');
-while t < max(data_struct.timestamp)
+while t < apogee_time
 
     frac_complete = t/max(data_struct.timestamp);
     % Waitbar
@@ -117,6 +117,13 @@ while t < max(data_struct.timestamp)
     x_est(:, end + 1) = [filter.x; apogee];
 
     apogee_log = [apogee_log,[t, apogee, apogee_std]'];
+
+
+    % Exit statement
+    if x_est(2,:) < -1
+        break
+    end
+
 end
 waitbar(frac_complete,figure_waitbar,"Plotting " + filter_name);
 close(figure_waitbar);

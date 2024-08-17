@@ -6,13 +6,12 @@
 
 % Remove the subsequent values from the ZOH sensor data - might have done
 % this?
-  
 
 %%3 Tidy up
 clear all;
 close all; % Uncomment if comparing plots
 addpath("filters\")
-filename = 'data/owen.csv';
+filename = 'data/Regulus.csv';
 
 
 %% Define all the filters here, need to add filter names to the initialise filter switchcase in run_filter.m
@@ -20,7 +19,7 @@ filters = ["UKF_constant_acceleration", "UKF_constant_Cb", "EKF_constant_acceler
 
 %% Filter parameters
 sigma_Q = 0.1;
-sigma_Q_Cb = 100;
+sigma_Q_Cb = 10;
 % For optimal results 
     % CCb UKF:
         % sigma_Q = 0.1
@@ -29,6 +28,9 @@ sigma_Q_Cb = 100;
         % sigma_Q = 
         % sigma_Q_Cb = 
 
+
+
+apogee_time = 30;
 measurement_sigma_bar = 0.5744578867366569; % Barometer measurement STD
 measurement_sigma_acc = 0.006942717204787825; % Accelerometer measurement STD
 

@@ -68,21 +68,17 @@ classdef CKF_constant_Cb
                 g = obj.get_gravity(x_s(1));
                 rho = obj.get_density(x_s(1));
 
-               if g - x_s(3) > 0 % Model for ballistic state - constant ballistic coefficient
+                if g - x_s(3) > 0 % Model for ballistic state - constant ballistic coefficient
                     x_s(1) = x_s(1) + x_s(2) * dt + 1/2 * x_s(3) * dt^2;
                     x_s(2) = x_s(2) + x_s(3) * dt;
                     x_s(3) = g - (rho * x_s(2)^2) / (2 * x_s(4));
                     x_s(4) = x_s(4);
-                    obj.P(4,4) = min(obj.P(4,4), 1); % Clamp Cb P
-                    
+
                 else % Model for non-ballistic state - constant acceleration
                     x_s(1) = x_s(1) + x_s(2) * dt + 1/2 * x_s(3) * dt^2;
                     x_s(2) = x_s(2) + x_s(3) * dt;
                     x_s(3) = x_s(3);
                     x_s(4) = x_s(4);%(rho * x_s(2)^2) / (2 * (abs(g - x_s(3))));
-
-                    obj.P(4,4) = min(obj.P(4,4), 1); % Clamp Cb P
-                    disp(obj.P(4,4))
                 end
 
                 % Update cubature point with new state
@@ -94,11 +90,23 @@ classdef CKF_constant_Cb
 
 
         function Q = calculateProcessNoise(obj, dt)
-            % Calculate the process noise covariance matrix Q
-            Q = [1/4*dt^4*obj.sigma_Q^2, 1/2*dt^3*obj.sigma_Q^2, 1/2*dt^2*obj.sigma_Q^2, 0;
-                1/2*dt^3*obj.sigma_Q^2,    dt^2*obj.sigma_Q^2,    dt*obj.sigma_Q^2, 0;
-                1/2*dt^2*obj.sigma_Q^2,      dt*obj.sigma_Q^2,          obj.sigma_Q^2, 0;
-                0, 0, 0, obj.sigma_Q_Cb^2];
+
+            g = obj.get_gravity(obj.x(1));
+            if g - obj.x(3) > 0 % Model for ballistic state
+                % Calculate the process noise covariance matrix Q
+                Q = [1/4*dt^4*obj.sigma_Q^2, 1/2*dt^3*obj.sigma_Q^2, 1/2*dt^2*obj.sigma_Q^2, 0;
+                    1/2*dt^3*obj.sigma_Q^2,    dt^2*obj.sigma_Q^2,    dt*obj.sigma_Q^2, 0;
+                    1/2*dt^2*obj.sigma_Q^2,      dt*obj.sigma_Q^2,          obj.sigma_Q^2, 0;
+                    0, 0, 0, obj.sigma_Q_Cb^2];
+            else
+                % In constant acceleration mode, set Q_Cb to 0
+                Q = [1/4*dt^4*obj.sigma_Q^2, 1/2*dt^3*obj.sigma_Q^2, 1/2*dt^2*obj.sigma_Q^2, 0;
+                    1/2*dt^3*obj.sigma_Q^2,    dt^2*obj.sigma_Q^2,    dt*obj.sigma_Q^2, 0;
+                    1/2*dt^2*obj.sigma_Q^2,      dt*obj.sigma_Q^2,          obj.sigma_Q^2, 0;
+                    0, 0, 0, 0];
+
+
+            end
         end
 
         function [apogee, apogee_std] = get_apogee(obj)

@@ -70,11 +70,22 @@ classdef UKF_constant_Cb
         end
 
         function Q = calculateProcessNoise(obj, dt)
-            % Calculate the process noise covariance matrix Q
-            Q = [1/4*dt^4*obj.sigma_Q^2, 1/2*dt^3*obj.sigma_Q^2, 1/2*dt^2*obj.sigma_Q^2, 0;
-                 1/2*dt^3*obj.sigma_Q^2,    dt^2*obj.sigma_Q^2,    dt*obj.sigma_Q^2, 0;
-                 1/2*dt^2*obj.sigma_Q^2,      dt*obj.sigma_Q^2,          obj.sigma_Q^2, 0;
-                 0, 0, 0, obj.sigma_Q_Cb^2];
+
+            g = obj.get_gravity(obj.x(1));
+            if g - obj.x(3) > 0 % Condition for ballistic state
+                Q = [1/4*dt^4*obj.sigma_Q^2, 1/2*dt^3*obj.sigma_Q^2, 1/2*dt^2*obj.sigma_Q^2, 0;
+                    1/2*dt^3*obj.sigma_Q^2,    dt^2*obj.sigma_Q^2,    dt*obj.sigma_Q^2, 0;
+                    1/2*dt^2*obj.sigma_Q^2,      dt*obj.sigma_Q^2,          obj.sigma_Q^2, 0;
+                    0, 0, 0, obj.sigma_Q_Cb^2];
+            else
+                % In constant acceleration mode, set Q_Cb to 0
+                Q = [1/4*dt^4*obj.sigma_Q^2, 1/2*dt^3*obj.sigma_Q^2, 1/2*dt^2*obj.sigma_Q^2, 0;
+                    1/2*dt^3*obj.sigma_Q^2,    dt^2*obj.sigma_Q^2,    dt*obj.sigma_Q^2, 0;
+                    1/2*dt^2*obj.sigma_Q^2,      dt*obj.sigma_Q^2,          obj.sigma_Q^2, 0;
+                    0, 0, 0, 0];
+
+
+            end
         end
 
         function [apogee, apogee_std] = get_apogee(obj)
