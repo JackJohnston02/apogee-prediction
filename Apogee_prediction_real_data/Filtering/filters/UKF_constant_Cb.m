@@ -2,7 +2,7 @@ classdef UKF_constant_Cb
     % Author : Jack Johnston
     % Date : 31/07/24
 
-    % Refactoring and combination of previous code
+    % Refactoring and combin\ation of previous code
 
     % Unscented Kalman filter, for state observation of Cb
     % State estimator for altitude, vertical velocity, vertical
@@ -203,7 +203,8 @@ classdef UKF_constant_Cb
                     x_s(1) = x_s(1) + x_s(2) * dt + 1/2 * x_s(3) * dt^2;
                     x_s(2) = x_s(2) + x_s(3) * dt;
                     x_s(3) = g - (rho * x_s(2)^2) / (2 * x_s(4));
-                    x_s(4) = x_s(4);
+                    x_s(4) = max(x_s(4), 10);  % Clamping to stop Cb going negtative
+
 
                 else % Model for non-ballistic state - constant acceleration
                     x_s(1) = x_s(1) + x_s(2) * dt + 1/2 * x_s(3) * dt^2;

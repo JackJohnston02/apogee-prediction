@@ -2,7 +2,22 @@ set(groot,'defaulttextinterpreter','latex');
 set(groot,'defaultAxesTickLabelInterpreter','latex');  
 set(groot,'defaultLegendInterpreter','latex');
 
-filters = ["UKF_constant_acceleration", "UKF_constant_Cb", "EKF_constant_acceleration", "EKF_constant_Cb"];
+% List of filters including CKF
+filters = ["UKF_constant_acceleration", "UKF_constant_Cb", "EKF_constant_acceleration", "EKF_constant_Cb", "CKF_constant_acceleration", "CKF_constant_Cb"];
+
+% Define symbols and colors for the different model types
+constant_accel_markers = 'o'; % Symbol for constant acceleration models
+constant_cb_markers = 's'; % Symbol for constant ballistic coefficient models
+
+colors = {
+    [0 0.4470 0.7410], % Color for UKF_constant_acceleration
+    [0.8500 0.3250 0.0980], % Color for UKF_constant_Cb
+    [0 0.4470 0.7410], % Color for EKF_constant_acceleration
+    [0.8500 0.3250 0.0980], % Color for EKF_constant_Cb
+    [0.9290 0.6940 0.1250], % Color for CKF_constant_acceleration
+    [0.4940 0.1840 0.5560]  % Additional Color for CKF_constant_Cb
+};
+
 time_min = 9;
 time_max = 17;
 factor = 40;
@@ -36,6 +51,7 @@ for i = 1:length(filters)
     all_apogee_est_smooth{i} = apogee_est_smooth;
 end
 
+% Determine plot limits
 x_min = min(cellfun(@(x) min(x), all_times));
 x_max = max(cellfun(@(x) max(x), all_times));
 y_min_bc = min(cellfun(@(y) min(y), all_x_est_smooth));
@@ -43,20 +59,18 @@ y_max_bc = max(cellfun(@(y) max(y), all_x_est_smooth));
 y_min_apogee = min(cellfun(@(y) min(y), all_apogee_est_smooth));
 y_max_apogee = max(cellfun(@(y) max(y), all_apogee_est_smooth));
 
-markers = {'o', 'o', 's', 's'};
-colors = {
-    [0 0.4470 0.7410],
-    [0.8500 0.3250 0.0980],
-    [0 0.4470 0.7410],
-    [0.8500 0.3250 0.0980]
-};
-
+% Plot for Ballistic Coefficient Comparison
 figure('Position', [100, 100, 700, 500], "Name", "Ballistic Coefficient Comparison Plot");
 
 plot_handles_bc = gobjects(1, length(filters));
 
 for i = 1:length(filters)
-    plot_handles_bc(i) = plot(all_times{i}, all_x_est_smooth{i}, [markers{i}, '-'], ...
+    if contains(filters(i), 'constant_acceleration')
+        marker = constant_accel_markers;
+    else
+        marker = constant_cb_markers;
+    end
+    plot_handles_bc(i) = plot(all_times{i}, all_x_est_smooth{i}, [marker, '-'], ...
         'LineWidth', 1.5, 'MarkerSize', 6, 'Color', colors{i}, ...
         'DisplayName', strrep(filters(i), '_', '\_')); 
     hold on;
@@ -84,12 +98,18 @@ set(gcf, 'Color', 'w');
 
 saveas(gcf, 'plots/IAC_Cb_Plot_IAC.png');
 
+% Plot for Predicted Apogee Comparison
 figure('Position', [100, 100, 700, 500], "Name", "Predicted Apogee Comparison Plot");
 
 plot_handles_apogee = gobjects(1, length(filters));
 
 for i = 1:length(filters)
-    plot_handles_apogee(i) = plot(all_times{i}, all_apogee_est_smooth{i}, [markers{i}, '-'], ...
+    if contains(filters(i), 'constant_acceleration')
+        marker = constant_accel_markers;
+    else
+        marker = constant_cb_markers;
+    end
+    plot_handles_apogee(i) = plot(all_times{i}, all_apogee_est_smooth{i}, [marker, '-'], ...
         'LineWidth', 1.5, 'MarkerSize', 6, 'Color', colors{i}, ...
         'DisplayName', strrep(filters(i), '_', '\_')); 
     hold on;

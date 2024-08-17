@@ -47,11 +47,11 @@ switch filter_type
     case "UKF_constant_acceleration"
         filter = UKF_constant_acceleration(initial_state, initial_covariance, sigma_Q, sigma_Q_Cb, measurement_sigma_acc, measurement_sigma_bar, t);
         filter_name = "Constant Acceleration UKF";
-        
+
     case "UKF_constant_Cb"
         filter = UKF_constant_Cb(initial_state, initial_covariance, sigma_Q, sigma_Q_Cb, measurement_sigma_acc, measurement_sigma_bar, t);
         filter_name = "Constant Ballistic Coefficient UKF";
-    
+
     case "EKF_constant_acceleration"
         filter = EKF_constant_acceleration(initial_state, initial_covariance, sigma_Q, sigma_Q_Cb, measurement_sigma_acc, measurement_sigma_bar, t);
         filter_name = "Constant Acceleration EKF";
@@ -59,7 +59,15 @@ switch filter_type
     case "EKF_constant_Cb"
         filter = EKF_constant_Cb(initial_state, initial_covariance, sigma_Q, sigma_Q_Cb, measurement_sigma_acc, measurement_sigma_bar, t);
         filter_name = "Constant Ballistic Coefficient EKF";
-    
+
+    case "CKF_constant_acceleration"
+        filter = CKF_constant_acceleration(initial_state, initial_covariance, sigma_Q, sigma_Q_Cb, measurement_sigma_acc, measurement_sigma_bar, t);
+        filter_name = "Constant Acceleration CKF";
+
+    case "CKF_constant_Cb"
+        filter = CKF_constant_Cb(initial_state, initial_covariance, sigma_Q, sigma_Q_Cb, measurement_sigma_acc, measurement_sigma_bar, t);
+        filter_name = "Constant Ballistic Coefficient CKF";
+
     case "SIRPF_constant_acceleration"
         filter = SIRPF_constant_acceleration(initial_state, initial_covariance, sigma_Q, sigma_Q_Cb, measurement_sigma_acc, measurement_sigma_bar, t);
         filter_name = "Constant Acceleration Particle Filter";
@@ -77,8 +85,8 @@ while t < max(data_struct.timestamp)
     frac_complete = t/max(data_struct.timestamp);
     % Waitbar
     waitbar(frac_complete,figure_waitbar,"Running " + filter_name);
-    
-    
+
+
     t = t + dt; % Increment time
     times = [times, t]; % Store current time
 
@@ -107,7 +115,7 @@ while t < max(data_struct.timestamp)
 
     % Record the estimated states and estimated apogee
     x_est(:, end + 1) = [filter.x; apogee];
-    
+
     apogee_log = [apogee_log,[t, apogee, apogee_std]'];
 end
 waitbar(frac_complete,figure_waitbar,"Plotting " + filter_name);
@@ -120,14 +128,14 @@ writematrix(exportMatrix,"data_filtered/" + filter_type +"_filtered_data.csv")
 run("plotting.m")
 
 function cropped_struct = crop_data_struct(data_struct, start_time, end_time)
-    % Find the indices where the timestamp is within the specified range
-    valid_indices = data_struct.timestamp >= start_time & data_struct.timestamp <= end_time;
-    cropped_struct = struct();
+% Find the indices where the timestamp is within the specified range
+valid_indices = data_struct.timestamp >= start_time & data_struct.timestamp <= end_time;
+cropped_struct = struct();
 
-    % Iterate over each field in the struct and crop the data
-    field_names = fieldnames(data_struct);
-    for i = 1:length(field_names)
-        field = field_names{i};
-        cropped_struct.(field) = data_struct.(field)(valid_indices);
-    end
+% Iterate over each field in the struct and crop the data
+field_names = fieldnames(data_struct);
+for i = 1:length(field_names)
+    field = field_names{i};
+    cropped_struct.(field) = data_struct.(field)(valid_indices);
+end
 end

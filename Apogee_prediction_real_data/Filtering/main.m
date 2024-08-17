@@ -16,12 +16,12 @@ filename = 'data/owen.csv';
 
 
 %% Define all the filters here, need to add filter names to the initialise filter switchcase in run_filter.m
-filters = ["UKF_constant_acceleration", "UKF_constant_Cb", "EKF_constant_acceleration", "EKF_constant_Cb", "All"];
+filters = ["UKF_constant_acceleration", "UKF_constant_Cb", "EKF_constant_acceleration", "EKF_constant_Cb", "CKF_constant_acceleration", "CKF_constant_Cb", "All"];
 
 %% Filter parameters
 sigma_Q = 0.1;
 sigma_Q_Cb = 100;
-% For optimal 
+% For optimal results 
     % CCb UKF:
         % sigma_Q = 0.1
         % sigma_Q_Cb = 100
