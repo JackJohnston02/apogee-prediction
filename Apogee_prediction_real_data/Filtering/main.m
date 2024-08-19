@@ -11,7 +11,7 @@
 clear all;
 close all; % Uncomment if comparing plots
 addpath("filters\")
-filename = 'data/Regulus.csv';
+filename = 'data/owen.csv';
 
 
 %% Define all the filters here, need to add filter names to the initialise filter switchcase in run_filter.m

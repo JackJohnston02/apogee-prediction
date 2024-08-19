@@ -26,7 +26,7 @@ colors = {
 time_min = 9;
 time_max = 23;
 factor = 40;
-windowSize = 1;
+windowSize = 10;
 
 % Initialize cells to store time and smoothed estimates for each filter
 all_times = cell(1, length(filters));

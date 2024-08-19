@@ -1,11 +1,19 @@
+% Close all open plots
+close all;
 
+% Set LaTeX as the default interpreter for text, axes, and legend
 set(groot,'defaulttextinterpreter','latex');  
 set(groot,'defaultAxesTickLabelInterpreter','latex');  
 set(groot,'defaultLegendInterpreter','latex');
 
+% Create the plots subfolder if it doesn't exist
+output_folder = 'plots';
+if ~exist(output_folder, 'dir')
+    mkdir(output_folder);
+end
 
 % Plotting states
-figure('Name', filter_name + " Estimated States");
+fig1 = figure('Name', filter_name + " Estimated States");
 tiledlayout(4,1);
 
 % Altitude plot
@@ -61,6 +69,9 @@ hold off;
 % Link x-axes
 linkaxes([ax1, ax2, ax3, ax4], 'x');
 
+% Save the figure
+saveas(fig1, fullfile(output_folder, filter_name + "_Estimated_States.png"));
+
 % Calculate bounds for 1, 2, and 3 standard deviations
 apogee_error = apogee_log(2,:) - max(x_est(1,:));
 apogee_std = apogee_log(3,:);
@@ -72,7 +83,7 @@ upper3 = apogee_error + 3 * apogee_std;
 lower3 = apogee_error - 3 * apogee_std;
 
 % Create the figure
-figure('Name',filter_name + " Predicted Apogee");
+fig2 = figure('Name',filter_name + " Predicted Apogee");
 hold on;
 fill([apogee_log(1,:), fliplr(apogee_log(1,:))], [upper3, fliplr(lower3)], [0.9, 0.9, 0.9], 'EdgeColor', 'none', 'FaceAlpha', 0.3);
 fill([apogee_log(1,:), fliplr(apogee_log(1,:))], [upper2, fliplr(lower2)], [0.7, 0.7, 0.7], 'EdgeColor', 'none', 'FaceAlpha', 0.5);
@@ -91,3 +102,5 @@ ylim([-50, 50]);
 xlim([0, apogee_time]);
 hold off;
 
+% Save the figure
+saveas(fig2, fullfile(output_folder, filter_name + "_Predicted_Apogee.png"));
