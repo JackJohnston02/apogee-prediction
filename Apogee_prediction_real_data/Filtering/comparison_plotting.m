@@ -24,9 +24,9 @@ colors = {
 
 % Define time range and other parameters
 time_min = 9;
-time_max = 23;
+time_max = 22.5;
 factor = 40;
-windowSize = 10;
+windowSize = 2;
 
 % Initialize cells to store time and smoothed estimates for each filter
 all_times = cell(1, length(filters));
@@ -63,7 +63,7 @@ for i = 1:length(filters)
     all_apogee_est_smooth{i} = apogee_est_smooth;
 
     % Store the true apogee from the UKF_constant_acceleration filter
-    if filter_name == "UKF_constant_acceleration"
+    if filter_name == "UKF_constant_Cb"
         true_apogee = apogee_est_smooth(end);
     end
 end

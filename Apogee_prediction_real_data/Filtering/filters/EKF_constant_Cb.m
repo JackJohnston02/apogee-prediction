@@ -78,10 +78,12 @@ classdef EKF_constant_Cb
                 
                 df3_dx1 = - (2*R_e^2*g_0)/(R_e + x(1))^3 - (M*p_0*x(2)^2*((L*((M*R_e^2*g_0)/(L*R*(R_e + x(1))^2) + 1))/(T_0*(1 - (L*x(1))/T_0)^((M*R_e^2*g_0)/(L*R*(R_e + x(1))^2) + 2)) + (2*M*R_e^2*g_0*log(1 - (L*x(1))/T_0))/(L*R*(R_e + x(1))^3*(1 - (L*x(1))/T_0)^((M*R_e^2*g_0)/(L*R*(R_e + x(1))^2) + 1))))/(2*R*T_0*x(4));
  
-                
+                % TODO
+                    % Work out why (3,1) is better when set as 0, taking PD
+                    % wrt alt, no change?!?
                 F = [1, dt, 0.5*dt^2, 0;
                      0, 1, dt, 0;
-                     df3_dx1, -(rho * x(2))/(x(4)), 0, (rho * x(2)^2)/(2 * x(4)^2);
+                     0 * df3_dx1, -(rho * x(2))/(x(4)), 0, (rho * x(2)^2)/(2 * x(4)^2);
                      0, 0, 0, 1];
                 u = obj.get_gravity(x(1)); %Ballisitic model absorbs gravitaty as an error if not accounted for here
 

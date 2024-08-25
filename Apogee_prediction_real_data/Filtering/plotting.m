@@ -93,7 +93,7 @@ plot(apogee_log(1,:), apogee_error, 'Color', [0, 0.4470, 0.7410], 'LineWidth', 1
 % Add labels and title
 xlabel('Time (s)', 'FontWeight', 'bold');
 ylabel('Apogee Prediction Error (m)', 'FontWeight', 'bold');
-title('Predicted Apogee Error with Standard Deviations from ' + filter_name, 'FontWeight', 'bold');
+title('Predicted Apogee Error from ' + filter_name, 'FontWeight', 'bold');
 legend('\(3\sigma\)', '\(2\sigma\)', '\(\sigma\)', 'Predicted Apogee Error', 'Location', 'best');
 grid on;
 grid minor;
