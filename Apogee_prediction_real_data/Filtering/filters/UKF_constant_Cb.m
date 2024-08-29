@@ -39,7 +39,7 @@ classdef UKF_constant_Cb
             obj.dt_apa = 0.01;
             obj.alpha = 1e-3;
             obj.beta = 2;
-            obj.kappa = 0;
+            obj.kappa = 1;
             obj.sigma_Q = sigma_Q; % Initialize obj.sigma_Q
             obj.sigma_Q_Cb = sigma_Q_Cb;% Scaler for Cb Q matrix
         end

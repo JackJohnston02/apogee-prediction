@@ -11,15 +11,15 @@
 clear all;
 close all; % Uncomment if comparing plots
 addpath("filters\")
-filename = 'data/regulus.csv';
+filename = 'data/owen.csv';
 
 
 %% Define all the filters here, need to add filter names to the initialise filter switchcase in run_filter.m
 filters = ["UKF_constant_acceleration", "UKF_constant_Cb", "EKF_constant_acceleration", "EKF_constant_Cb", "CKF_constant_acceleration", "CKF_constant_Cb", "All"];
 
 %% Filter parameters
-sigma_Q = 0.1;
-sigma_Q_Cb = 1;
+sigma_Q = 0.2;
+sigma_Q_Cb = 2;
 % For optimal results 
     % CCb UKF:
         % sigma_Q = 0.1
@@ -29,10 +29,19 @@ sigma_Q_Cb = 1;
         % sigma_Q_Cb = 
 
 
-
-apogee_time = 26;
+% 24.5ish for regulus
+% 18ish for owen
 measurement_sigma_bar = 0.5744578867366569; % Barometer measurement STD
 measurement_sigma_acc = 0.006942717204787825; % Accelerometer measurement STD
+
+if filename == "data/owen.csv"
+    burnout_time = 9;
+    apogee_time = 17.65;
+
+elseif filename == "data/regulus.csv"
+    apogee_time = 27;
+    burnout_time = 3;
+end
 
 for i = 1:length(filters)
     disp(i + " for " + filters(i))

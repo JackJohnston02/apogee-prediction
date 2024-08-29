@@ -83,7 +83,7 @@ classdef EKF_constant_Cb
                     % wrt alt, no change?!?
                 F = [1, dt, 0.5*dt^2, 0;
                      0, 1, dt, 0;
-                     0 * df3_dx1, -(rho * x(2))/(x(4)), 0, (rho * x(2)^2)/(2 * x(4)^2);
+                     0*df3_dx1, -(rho * x(2))/(x(4)), 0, (rho * x(2)^2)/(2 * x(4)^2);
                      0, 0, 0, 1];
                 u = obj.get_gravity(x(1)); %Ballisitic model absorbs gravitaty as an error if not accounted for here
 

@@ -14,6 +14,9 @@ end
 % Normalize timestamp
 data_struct.timestamp = (data_struct.timestamp - min(data_struct.timestamp)) / 1000;
 
+% Tare barometer data
+data_struct.baro_altitude = (data_struct.baro_altitude) - data_struct.baro_altitude(1); 
+
 % Remove repeated duplicate values
 fields = fieldnames(data_struct);
 

@@ -1,3 +1,8 @@
+% Define your custom colors
+color1 = "#627db8"; % Blue
+color2 = "#45ae8d"; % Teal
+color3 = "#fb6025"; % Orange
+
 % Close all open plots
 close all;
 
@@ -19,9 +24,9 @@ tiledlayout(4,1);
 % Altitude plot
 ax1 = nexttile;
 hold on;
-plot(times, x_est(1,:), 'Color', [0, 0.4470, 0.7410], 'LineWidth', 1.5); % Blue
-scatter(apogee_log(1,:), apogee_log(2,:), 36, 'x', 'MarkerEdgeColor', [0.8500, 0.3250, 0.0980]); % Orange
-scatter(data_struct.timestamp, data_struct.baro_altitude, 10, 'x', 'MarkerEdgeColor', [0.9290, 0.6940, 0.1250]); % Yellow
+plot(times, x_est(1,:), 'Color', color1, 'LineWidth', 1.5); % Custom Blue
+scatter(apogee_log(1,:), apogee_log(2,:), 36, 'x', 'MarkerEdgeColor', color3); % Custom Orange
+scatter(data_struct.timestamp, data_struct.baro_altitude, 10, 'x', 'MarkerEdgeColor', color2); % Custom Teal
 yline(max(x_est(1,:)), '--k', 'LineWidth', 1.5); % Black dashed line
 xlabel('Time (s)', 'FontWeight', 'bold');
 ylabel('Altitude (m)', 'FontWeight', 'bold');
@@ -34,7 +39,7 @@ hold off;
 
 % Velocity plot
 ax2 = nexttile;
-plot(times, x_est(2,:), 'Color', [0, 0.4470, 0.7410], 'LineWidth', 1.5); % Blue
+plot(times, x_est(2,:), 'Color', color1, 'LineWidth', 1.5); % Custom Blue
 hold on;
 xlabel('Time (s)', 'FontWeight', 'bold');
 ylabel('Velocity (m/s)', 'FontWeight', 'bold');
@@ -45,23 +50,22 @@ hold off;
 
 % Acceleration plot
 ax3 = nexttile;
-plot(times, x_est(3,:), 'Color', [0, 0.4470, 0.7410], 'LineWidth', 1.5); % Blue
+plot(times, x_est(3,:), 'Color', color1, 'LineWidth', 1.5); % Custom Blue
 hold on;
-scatter(data_struct.timestamp, data_struct.imu_accZ - 9.81, 10, 'x', 'MarkerEdgeColor', [0.9290, 0.6940, 0.1250]); % Orange
+scatter(data_struct.timestamp, data_struct.imu_accZ - 9.81, 10, 'x', 'MarkerEdgeColor', color3); % Custom Orange
 xlabel('Time (s)', 'FontWeight', 'bold');
 ylabel('Acceleration (\(m/s^2\))', 'FontWeight', 'bold');
 legend('Estimated Acceleration', 'IMU Acceleration', 'Location', 'best');
-yline(-9.81);
 grid on;
 grid minor;
 hold off;
 
 % Ballistic Coefficient plot
 ax4 = nexttile;
-plot(times, x_est(4,:), 'Color', [0, 0.4470, 0.7410], 'LineWidth', 1.5); % Blue
+plot(times, x_est(4,:), 'Color', color1, 'LineWidth', 1.5); % Custom Blue
 hold on;
 xlabel('Time (s)', 'FontWeight', 'bold');
-ylabel('Ballistic Coefficient ($kg/m^2$)', 'FontWeight', 'bold');
+ylabel('$C_b$ ($kg/m^2$)', 'FontWeight', 'bold');
 grid on;
 grid minor;
 hold off;
@@ -88,18 +92,18 @@ hold on;
 fill([apogee_log(1,:), fliplr(apogee_log(1,:))], [upper3, fliplr(lower3)], [0.9, 0.9, 0.9], 'EdgeColor', 'none', 'FaceAlpha', 0.3);
 fill([apogee_log(1,:), fliplr(apogee_log(1,:))], [upper2, fliplr(lower2)], [0.7, 0.7, 0.7], 'EdgeColor', 'none', 'FaceAlpha', 0.5);
 fill([apogee_log(1,:), fliplr(apogee_log(1,:))], [upper1, fliplr(lower1)], [0.5, 0.5, 0.5], 'EdgeColor', 'none', 'FaceAlpha', 0.7);
-plot(apogee_log(1,:), apogee_error, 'Color', [0, 0.4470, 0.7410], 'LineWidth', 1.5); % Blue
+plot(apogee_log(1,:), apogee_error, 'Color', color1, 'LineWidth', 1.5); % Custom Blue
 
 % Add labels and title
 xlabel('Time (s)', 'FontWeight', 'bold');
 ylabel('Apogee Prediction Error (m)', 'FontWeight', 'bold');
 title('Predicted Apogee Error from ' + filter_name, 'FontWeight', 'bold');
-legend('\(3\sigma\)', '\(2\sigma\)', '\(\sigma\)', 'Predicted Apogee Error', 'Location', 'best');
+yline(0, '--k', 'LineWidth', 1.5); % Black dashed line
+legend('\(3\sigma\)', '\(2\sigma\)', '\(\sigma\)', 'Predicted Apogee Error', 'Location', 'northeast');
 grid on;
 grid minor;
-yline(0, '--k', 'LineWidth', 1.5); % Black dashed line
 ylim([-50, 50]);
-xlim([0, apogee_time]);
+xlim([burnout_time, apogee_time]);
 hold off;
 
 % Save the figure
