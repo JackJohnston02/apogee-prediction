@@ -11,15 +11,24 @@
 clear all;
 close all; % Uncomment if comparing plots
 addpath("filters\")
-filename = 'data/owen.csv';
+
+flightname = "regulus";
+filename = 'data/' + flightname + '.csv';
+
+
 
 
 %% Define all the filters here, need to add filter names to the initialise filter switchcase in run_filter.m
 filters = ["UKF_constant_acceleration", "UKF_constant_Cb", "EKF_constant_acceleration", "EKF_constant_Cb", "CKF_constant_acceleration", "CKF_constant_Cb", "All"];
 
 %% Filter parameters
-sigma_Q = 0.2;
-sigma_Q_Cb = 2;
+sigma_Q = 0.2; % 0.2
+sigma_Q_Cb = 2; % 25 for owen.csv, 2 for regulus.csv
+
+initial_covariance = 1 * [1, 0, 0, 0;
+                            0, 1, 0, 0;
+                            0, 0, 1, 0;
+                            0, 0, 0, 10e2];
 % For optimal results 
     % CCb UKF:
         % sigma_Q = 0.1
@@ -29,7 +38,7 @@ sigma_Q_Cb = 2;
         % sigma_Q_Cb = 
 
 
-% 24.5ish for regulus
+% 24.5ish for regulus7
 % 18ish for owen
 measurement_sigma_bar = 0.5744578867366569; % Barometer measurement STD
 measurement_sigma_acc = 0.006942717204787825; % Accelerometer measurement STD

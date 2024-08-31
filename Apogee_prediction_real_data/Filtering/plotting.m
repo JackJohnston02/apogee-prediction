@@ -74,7 +74,7 @@ hold off;
 linkaxes([ax1, ax2, ax3, ax4], 'x');
 
 % Save the figure
-saveas(fig1, fullfile(output_folder, filter_name + "_Estimated_States.png"));
+saveas(fig1, fullfile(output_folder, filter_name + "_Estimated_States_" + flightname + ".png"));
 
 % Calculate bounds for 1, 2, and 3 standard deviations
 apogee_error = apogee_log(2,:) - max(x_est(1,:));
@@ -107,4 +107,4 @@ xlim([burnout_time, apogee_time]);
 hold off;
 
 % Save the figure
-saveas(fig2, fullfile(output_folder, filter_name + "_Predicted_Apogee.png"));
+saveas(fig2, fullfile(output_folder, filter_name + "_Predicted_Apogee_" + flightname + ".png"));

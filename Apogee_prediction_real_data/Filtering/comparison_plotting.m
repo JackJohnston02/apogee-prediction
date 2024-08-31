@@ -3,12 +3,22 @@ set(groot, 'defaulttextinterpreter', 'latex');
 set(groot, 'defaultAxesTickLabelInterpreter', 'latex');
 set(groot, 'defaultLegendInterpreter', 'latex');
 
-zoom_apogee_plot = 25;
-percentage_zoom = 5;
+
+% General settings
 time_min = 9;
 time_max = 25;
 factor = 100;
 windowSize = 1;
+
+% Ballistic Coefficient Plot settings
+y_max_bc = 1600;
+y_min_bc = 100;
+
+% Percentage error plot settings
+percentage_zoom = 5;
+
+% Apogee error plot settings
+zoom_apogee_plot = 25;
 
 % List of filters, including CKF, for comparison
 filters = ["UKF_constant_acceleration", "UKF_constant_Cb", ...
@@ -79,8 +89,7 @@ end
 % Determine plot limits based on the processed data
 x_min = min(cellfun(@(x) min(x), all_times));
 x_max = max(cellfun(@(x) max(x), all_times));
-y_min_bc = 2800;
-y_max_bc = 3600;
+
 y_min_apogee = round(true_apogee, -1) - zoom_apogee_plot; % Min y-limit for apogee plot
 y_max_apogee = round(true_apogee, -1) + zoom_apogee_plot; % Max y-limit for apogee plot
 y_min_percentage = -percentage_zoom;
@@ -144,7 +153,7 @@ set(gca, 'Box', 'on');
 set(gcf, 'Color', 'w');
 
 % Save the ballistic coefficient comparison plot
-saveas(gcf, 'plots/IAC_Cb_Plot_IAC.png');
+saveas(gcf, 'plots/Comparison_Cb_' + flightname + '.png');
 
 %% Plot for Predicted Apogee Comparison
 figure('Position', [100, 100, 700, 500], "Name", "Predicted Apogee Comparison Plot");
@@ -209,7 +218,7 @@ set(gca, 'Box', 'on');
 set(gcf, 'Color', 'w');
 
 % Save the predicted apogee comparison plot
-saveas(gcf, 'plots/IAC_Apogee_Plot_IAC.png');
+saveas(gcf, 'plots/Comparison_Predicted_apogee_' + flightname + '.png');
 
 %% Plot for Percentage Apogee Errors
 figure('Position', [100, 100, 700, 500], "Name", "Percentage Apogee Error Plot");
@@ -269,4 +278,4 @@ set(gca, 'Box', 'on');
 set(gcf, 'Color', 'w');
 
 % Save the percentage apogee error plot
-saveas(gcf, 'plots/IAC_Percentage_Apogee_Error_Plot_IAC.png');
+saveas(gcf, 'plots/Comparison_Percentage_Apogee_Error_Plot_' + flightname + '.png');

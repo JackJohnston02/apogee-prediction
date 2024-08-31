@@ -125,6 +125,7 @@ classdef EKF_constant_Cb
             innovation = measurement - H * predicted_state;
             updated_state = predicted_state + K * innovation;
             updated_covariance = predicted_covariance - K * S * K';
+            %updated_covariance  = (eye(size(predicted_covariance)) - K * H) * predicted_covariance; 
             obj.x = updated_state;
             obj.P = updated_covariance;
         end
@@ -148,6 +149,7 @@ classdef EKF_constant_Cb
             innovation = measurement - H * predicted_state;
             updated_state = predicted_state + K * innovation;
             updated_covariance = predicted_covariance - K * S * K';
+            %updated_covariance  = (eye(size(predicted_covariance)) - K * H) * predicted_covariance;
             obj.x = updated_state;
             obj.P = updated_covariance;
         end
