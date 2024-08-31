@@ -12,7 +12,7 @@ clear all;
 close all; % Uncomment if comparing plots
 addpath("filters\")
 
-flightname = "regulus";
+flightname = "owen";
 filename = 'data/' + flightname + '.csv';
 
 
