@@ -21,7 +21,7 @@ clc
 clear all;
 
 %% Simulation Settings
-rocket_file_name = "Regulus";%File containing rocket data
+rocket_file_name = "owen";%File containing rocket data
 dt = 0.01; %Simulation timestep
 targetApogee = 3000;
 
