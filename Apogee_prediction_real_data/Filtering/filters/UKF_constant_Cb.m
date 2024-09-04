@@ -25,7 +25,7 @@ classdef UKF_constant_Cb
         beta            % UKF parameter
         kappa           % UKF parameter
         sigma_Q         % Standard deviation of acceleration noise
-        sigma_Q_Cb      % Scalr term 
+        sigma_Q_Cb      % Scalr term
     end
 
     methods
@@ -89,10 +89,10 @@ classdef UKF_constant_Cb
         end
 
         function [apogee, apogee_std] = get_apogee(obj)
-            %todo something wrong here, it seems to get stuck in the loop
             propagated_x = obj.x;
             propagated_P = obj.P;
 
+            % Propagate states forward untill apogee is reached
             while propagated_x(2) > 0 && propagated_x(3) < 0
                 [sigma_points, weights_mean, weights_cov] = obj.generateSigmaPoints(propagated_x, propagated_P);
 
