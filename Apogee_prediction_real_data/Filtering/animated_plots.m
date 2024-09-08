@@ -1,5 +1,14 @@
 clear all;
 close all;
+
+% Settings
+aspect_ratio = [600, 1000]; % Aspect ratio (width, height)
+figure_scale = 1000; % Scale factor for the figure size
+
+% Calculate figure dimensions based on aspect ratio and scale
+figure_width = aspect_ratio(1) * figure_scale / aspect_ratio(2);
+figure_height = figure_scale;
+
 folder = 'data_filtered';
 
 % Get a list of all CSV files in the folder
@@ -10,7 +19,7 @@ fileNames = {csvFiles.name};
 
 % Display the list of files to the user
 for i = 1:length(fileNames)
-    disp(string(i) + " : " +fileNames(i));
+    disp(string(i) + " : " + fileNames(i));
 end
 
 % Prompt the user to select a file by entering a number
@@ -54,10 +63,10 @@ range2 = max(state2_ds) - min(state2_ds);
 range3 = max(state3_ds) - min(state3_ds);
 range4 = max(state4_ds) - min(state4_ds);
 
-ylim1 = [min(state1_ds) - 0.1*range1, max(state1_ds) + 0.1*range1];
-ylim2 = [min(state2_ds) - 0.1*range2, max(state2_ds) + 0.1*range2];
-ylim3 = [min(state3_ds) - 0.1*range3, max(state3_ds) + 0.1*range3];
-ylim4 = [min(state4_ds) - 0.1*range4, max(state4_ds) + 0.1*range4];
+ylim1 = [min(state1_ds), max(state1_ds) + 0.2 * range1];
+ylim2 = [min(state2_ds), max(state2_ds) + 0.2 * range2];
+ylim3 = [min(state3_ds) - 0.1 * range3, max(state3_ds) + 0.1 * range3];
+ylim4 = [min(state4_ds) - 0.1 * range4, max(state4_ds) + 0.1 * range4];
 
 % Calculate frame rate
 time_intervals = diff(times_ds);
@@ -77,39 +86,39 @@ color4 = "#627db8"; % Default MATLAB purple
 color5 = "#45ae8d"; % Default MATLAB green
 
 % Setup for animated subplots
-figure('Position', [100, 100, 800, 1000]);
+figure('Position', [100, 100, figure_width, figure_height]);
+
+sgtitle('UKF State Estimation', 'Interpreter', 'latex', 'FontWeight', 'bold');
+
 
 % Create the 4x1 subplots
 subplot(4, 1, 1);
 hold on;
 plot_handle1 = plot(NaN, NaN, 'LineWidth', 1.5, 'Color', color1, 'DisplayName', 'Altitude');
 scatter_handle1 = scatter(NaN, NaN, 20, 'x', 'MarkerEdgeColor', color5, 'DisplayName', 'Predicted Apogee');
-%xlabel('Time (s)', 'Interpreter', 'latex');
-ylabel('Altitude ($m$)', 'Interpreter', 'latex');
-legend('show', 'Location', 'southeast'); % Set legend location to southeast
+ylabel('Altitude ($m$)', 'Interpreter', 'latex', 'FontWeight', 'bold');
+legend('show', 'Location', 'southeast', 'FontWeight', 'bold'); % Set legend location to southeast
 grid on;
 hold off;
 
 subplot(4, 1, 2);
 plot_handle2 = plot(NaN, NaN, 'LineWidth', 1.5, 'Color', color2);
-%xlabel('Time (s)', 'Interpreter', 'latex');
-ylabel('Velocity ($m/s$)', 'Interpreter', 'latex');
+ylabel('Velocity ($m/s$)', 'Interpreter', 'latex', 'FontWeight', 'bold');
 grid on;
 
 subplot(4, 1, 3);
 plot_handle3 = plot(NaN, NaN, 'LineWidth', 1.5, 'Color', color3);
-%xlabel('Time (s)', 'Interpreter', 'latex');
-ylabel('Acceleration ($m/s^2$)', 'Interpreter', 'latex');
+ylabel('Acceleration ($m/s^2$)', 'Interpreter', 'latex', 'FontWeight', 'bold');
 grid on;
 
 subplot(4, 1, 4);
 plot_handle4 = plot(NaN, NaN, 'LineWidth', 1.5, 'Color', color4);
-xlabel('Time (s)', 'Interpreter', 'latex');
-ylabel('Ballistic Coefficient $(kg/m^2)$', 'Interpreter', 'latex');
+xlabel('Time (s)', 'Interpreter', 'latex', 'FontWeight', 'bold');
+ylabel('Ballistic Coefficient $(kg/m^2)$', 'Interpreter', 'latex', 'FontWeight', 'bold');
 grid on;
 
 % Create a VideoWriter object to save the animation
-video_filename = 'animated_plot.mp4';
+video_filename = 'animated_plots/new_animated_plot.mp4';
 video = VideoWriter(video_filename, 'MPEG-4');
 video.FrameRate = frame_rate; % Set the frame rate to match the data interval
 open(video);
@@ -138,6 +147,12 @@ for t = 1:length(times_ds)
     
     xlim([min(times_ds) max(times_ds)]);
     ylim(ylim1);
+    
+    % Set y-axis ticks with increments of 500
+    ytick_interval = 1000;
+    y_min = floor(ylim1(1) / ytick_interval) * ytick_interval;
+    y_max = ceil(ylim1(2) / ytick_interval) * ytick_interval;
+    set(gca, 'YTick', y_min:ytick_interval:y_max);
     
     % Update subplot 2 (Velocity)
     subplot(4, 1, 2);
@@ -177,3 +192,4 @@ end
 close(video);
 
 disp(sprintf('Animation complete and saved to %s', video_filename));
+close all;

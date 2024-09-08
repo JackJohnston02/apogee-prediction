@@ -1,24 +1,27 @@
+close all
 % Set default text interpreter to LaTeX for better formatting in plots
 set(groot, 'defaulttextinterpreter', 'latex');
 set(groot, 'defaultAxesTickLabelInterpreter', 'latex');
 set(groot, 'defaultLegendInterpreter', 'latex');
 
-
 % General settings
 time_min = 9;
-time_max = 25;
-factor = 100;
-windowSize = 1;
+time_max = 27;
+factor = 150;
+windowSize = 5;
 
 % Ballistic Coefficient Plot settings
-y_max_bc = 1600;
-y_min_bc = 100;
+y_max_bc = 1400;
+y_min_bc = 500;
 
 % Percentage error plot settings
-percentage_zoom = 5;
+percentage_zoom = 1;
 
 % Apogee error plot settings
 zoom_apogee_plot = 25;
+
+% Symbol size for all plots
+markerSize = 7; % Adjust this value to control the symbol size
 
 % List of filters, including CKF, for comparison
 filters = ["UKF_constant_acceleration", "UKF_constant_Cb", ...
@@ -43,6 +46,9 @@ all_percentage_errors = cell(1, length(filters));
 % Initialize variables
 true_apogee = NaN; % Use NaN to signify that it's not set initially
 
+% Define a larger offset range for staggering
+max_offset = factor;
+
 % Loop through each filter to process and store data
 for i = 1:length(filters)
     filter_name = filters(i);
@@ -58,9 +64,12 @@ for i = 1:length(filters)
     times_filtered = times(index);
     x_est_filtered = x_est(index);
 
-    % Downsample and smooth the data
-    times_sampled = times_filtered(1:factor:end);
-    x_est_sampled = x_est_filtered(1:factor:end);
+    % Define stagger offset for this filter
+    offset = mod(i * floor(max_offset / length(filters)), max_offset);
+
+    % Downsample and smooth the data with staggered sampling
+    times_sampled = times_filtered(1+offset:factor:end);
+    x_est_sampled = x_est_filtered(1+offset:factor:end);
     x_est_smooth = movmean(x_est_sampled, windowSize);
     all_times{i} = times_sampled;
     all_x_est_smooth{i} = x_est_smooth;
@@ -68,14 +77,10 @@ for i = 1:length(filters)
     % Process the apogee estimate
     apogee_est = data(:, 6);
     apogee_est_filtered = apogee_est(index);
-    apogee_est_sampled = apogee_est_filtered(1:factor:end);
+    apogee_est_sampled = apogee_est_filtered(1+offset:factor:end);
     apogee_est_smooth = movmean(apogee_est_sampled, windowSize);
     all_apogee_est_smooth{i} = apogee_est_smooth;
-
-    % Compute percentage apogee errors
-    if filter_name == "UKF_constant_Cb"
-        true_apogee = apogee_est_smooth(end);
-    end
+    true_apogee = 522.5;
     
     % Only compute percentage errors if true_apogee is defined
     if ~isnan(true_apogee)
@@ -124,14 +129,15 @@ for i = 1:length(filters)
     end
     
     plot_handles_bc(i) = plot(all_times{i}, all_x_est_smooth{i}, [marker, '-'], ...
-        'LineWidth', 1.5, 'MarkerSize', 6, 'Color', color, ...
+        'LineWidth', 1.5, 'MarkerSize', markerSize, 'Color', color, ...
         'DisplayName', strrep(filter_name, '_', '\_')); % Display name with LaTeX formatting
     hold on;
 end
 
-% Add labels, legend, and axis formatting
+% Add labels, title, legend, and axis formatting
 xlabel('Time (s)', 'FontSize', 12, 'FontWeight', 'bold', 'FontName', 'Arial');
 ylabel('Ballistic Coefficient $(kg/m^2)$', 'FontSize', 12, 'FontWeight', 'bold', 'FontName', 'Arial');
+title('Ballistic Coefficient Comparison', 'FontSize', 14, 'FontWeight', 'bold', 'FontName', 'Arial');
 legend(plot_handles_bc, strrep(filters, '_', '\_'), 'Location', 'southwest', 'FontSize', 10, 'FontName', 'Arial');
 
 xlim([x_min, x_max]);
@@ -184,7 +190,7 @@ for i = 1:length(filters)
     end
     
     plot_handles_apogee(i) = plot(all_times{i}, all_apogee_est_smooth{i}, [marker, '-'], ...
-        'LineWidth', 1.5, 'MarkerSize', 6, 'Color', color, ...
+        'LineWidth', 1.5, 'MarkerSize', markerSize, 'Color', color, ...
         'DisplayName', strrep(filter_name, '_', '\_')); % Display name with LaTeX formatting
     hold on;
 end
@@ -192,9 +198,10 @@ end
 % Add a horizontal line representing the true apogee
 hline = yline(true_apogee, '--k', 'LineWidth', 1.5);
 
-% Add labels, legend, and axis formatting
+% Add labels, title, legend, and axis formatting
 xlabel('Time (s)', 'FontSize', 12, 'FontWeight', 'bold', 'FontName', 'Arial');
 ylabel('Predicted Apogee Error $(m)$', 'FontSize', 12, 'FontWeight', 'bold', 'FontName', 'Arial');
+title('Predicted Apogee Comparison', 'FontSize', 14, 'FontWeight', 'bold', 'FontName', 'Arial');
 
 legend([plot_handles_apogee, hline], [strrep(filters, '_', '\_'), 'True Apogee'], ...
     'Location', 'best', 'FontSize', 10, 'FontName', 'Arial');
@@ -249,14 +256,16 @@ for i = 1:length(filters)
     end
     
     plot_handles_percentage(i) = plot(all_times{i}, all_percentage_errors{i}, [marker, '-'], ...
-        'LineWidth', 1.5, 'MarkerSize', 6, 'Color', color, ...
+        'LineWidth', 1.5, 'MarkerSize', markerSize, 'Color', color, ...
         'DisplayName', strrep(filter_name, '_', '\_')); % Display name with LaTeX formatting
     hold on;
 end
 
-% Add labels, legend, and axis formatting
+% Add labels, title, legend, and axis formatting
 xlabel('Time (s)', 'FontSize', 12, 'FontWeight', 'bold', 'FontName', 'Arial');
 ylabel('Percentage Apogee Error $(\%)$', 'FontSize', 12, 'FontWeight', 'bold', 'FontName', 'Arial');
+title('Percentage Apogee Error Comparison', 'FontSize', 14, 'FontWeight', 'bold', 'FontName', 'Arial');
+
 legend(plot_handles_percentage, strrep(filters, '_', '\_'), 'Location', 'best', 'FontSize', 10, 'FontName', 'Arial');
 
 xlim([x_min, x_max]);
