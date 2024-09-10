@@ -94,10 +94,14 @@ while t < apogee_time
     times = [times, t]; % Store current time
 
     % Predict step
+    tic;
     [filter, predicted_state, predicted_covariance] = filter.predict(t);
+    filterTimes.(filter_type).timeUpdateTimes(end+1) = toc;
+
 
     % Update step if new data is available
     if k <= length(data_struct.timestamp) && t >= data_struct.timestamp(k)
+        tic;   
         % Check if it's time for a barometer update
         if data_struct.baro_altitude(k) ~= z_b
             z_b = data_struct.baro_altitude(k); % Barometer measurement
@@ -109,12 +113,15 @@ while t < apogee_time
             z_a = data_struct.imu_accZ(k); % Accelerometer measurement
             [filter, updated_state, updated_covariance] = filter.updateAccelerometer(z_a, t); % Update state with accelerometer measurement
         end
-
+    
+        filterTimes.(filter_type).measurementUpdateTimes(end+1) = toc;
         k = k + 1; % Increment measurement index
     end
 
 
+    tic;
     [apogee, apogee_std] = filter.get_apogee();
+    filterTimes.(filter_type).apogeePredictionTimes(end+1) = toc;
 
     % Record the estimated states and estimated apogee
     x_est(:, end + 1) = [filter.x; apogee];

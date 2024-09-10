@@ -58,9 +58,17 @@ end
 
 filter_choice = filters(input("Choose Filter:"));
 
+% Timing
+filterTimes = struct();
+
 if filter_choice == "All"
     for i = 1:length(filters)-1
         filter_type = filters(i);
+
+o
+
+
+        
         run("run_filter.m");
     end
     run("comparison_plotting.m")
