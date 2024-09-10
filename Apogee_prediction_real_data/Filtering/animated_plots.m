@@ -79,11 +79,11 @@ set(groot, 'defaultAxesTickLabelInterpreter', 'latex');
 set(groot, 'defaultLegendInterpreter', 'latex');
 
 % Define colors for the plots
-color1 = "#627db8"; % Default MATLAB blue
-color2 = "#627db8"; % Default MATLAB orange
-color3 = "#627db8"; % Default MATLAB yellow
-color4 = "#627db8"; % Default MATLAB purple
-color5 = "#45ae8d"; % Default MATLAB green
+color1 = "#627db8"; 
+color2 = "#627db8"; 
+color3 = "#627db8"; 
+color4 = "#627db8";
+color5 = "#45ae8d"; 
 
 % Setup for animated subplots
 figure('Position', [100, 100, figure_width, figure_height]);

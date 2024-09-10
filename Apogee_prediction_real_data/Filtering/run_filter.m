@@ -124,7 +124,7 @@ while t < apogee_time
     filterTimes.(filter_type).apogeePredictionTimes(end+1) = toc;
 
     % Record the estimated states and estimated apogee
-    x_est(:, end + 1) = [filter.x; apogee];
+    x_est(:, end + 1) = [filter.x; apogee; apogee_std];
 
     apogee_log = [apogee_log,[t, apogee, apogee_std]'];
 
