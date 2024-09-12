@@ -55,17 +55,12 @@ mean_ballistic_coefficient = mean(ballistic_coefficient);
 apogee = max(altitude);
 max_velocity = max(velocity);
 
-n = 5; % Number of isolines
-m = 10000;
-
-Cb_lb = round((mean_ballistic_coefficient - mean_ballistic_coefficient/2)/50)*50;
-Cb_ub = round((mean_ballistic_coefficient + mean_ballistic_coefficient/2)/50)*50;
-
-% Define the lower bound with a minimum threshold
-Cb_lb = max(Cb_lb, 100);
 
 % Generate values
-Cb_inputs = linspace(Cb_lb, Cb_ub, n);
+Cb_inputs = [50, 100, 200, 400, 800, 1600, 3200, 6400];
+n = length(Cb_inputs);
+m = 10000;
+
 
 % Ensure each value is a multiple of 50
 multiple = 50;
@@ -134,7 +129,7 @@ pre_burnout = plot(velocity(1:index_motor_burnout), altitude(1:index_motor_burno
 
 % Plot second segment with another custom color
 post_burnout = plot(velocity(index_motor_burnout:end), altitude(index_motor_burnout:end), ...
-     'LineWidth', 2, 'Color', "#45ae8d");  % Orange color
+     'LineWidth', 2, 'Color', "#627db8");  % Orange color
 
 % Add legend with only specific lines
 legend([pre_burnout, post_burnout], {'Pre-Burnout', 'Post-Burnout'});

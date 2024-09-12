@@ -79,6 +79,15 @@ if filter_choice == "All"
     run("comparison_plotting.m")
 else
     filter_type = filter_choice;
+    filterTimes.(filter_type).timeUpdateTimes = [];
+    filterTimes.(filter_type).measurementUpdateTimes = [];
+    filterTimes.(filter_type).apogeePredictionTimes = [];
+
+    % Initialize the average times for each step in the nested struct
+    filterTimes.(filter_type).avgTimeUpdate = 0;
+    filterTimes.(filter_type).avgMeasurementUpdate = 0;
+    filterTimes.(filter_type).avgApogeePrediction = 0; 
+    
     run("run_filter.m")
 end
 
