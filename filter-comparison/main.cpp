@@ -2,6 +2,7 @@
 #include <memory>
 #include <algorithm>
 #include <iostream>
+#include <iomanip>
 #include <fstream>
 #include <sstream>
 #include <vector>
@@ -84,19 +85,36 @@ typedef struct flightData
 
 } flight_data_t;
 
-std::pair<double, double> runFilter(KalmanFilter* filter, const flight_data_t& flightData, double apogeeTime, double dt)
+double calculateMeanPercentageError(std::vector<std::pair<double, double>> apogees)
+{
+    const double finalApogee = apogees.at(apogees.size()-1).first;
+
+    double meanApogee = 0.0;
+
+    for (std::pair apogeePair : apogees)
+    {
+        meanApogee += apogeePair.first;
+    }
+
+    meanApogee /= apogees.size();
+
+    const double error = std::abs(meanApogee - finalApogee);
+
+    return (error / finalApogee) * 100;
+}
+
+std::vector<std::pair<double, double>> runFilter(KalmanFilter* filter, const flight_data_t& flightData, const double apogeeTime, const double dt)
 {
     double z_b = flightData.baro_altitude[0];
     double z_a = flightData.imu_accZ[0];
     int k = 0;
     double t = 0;
 
-    std::vector<double> times;
+    std::vector<std::pair<double, double>> predictions; // apogee, time
 
     while (t < apogeeTime)
     {
         t += dt;
-        times.push_back(t);
 
         filter->predict(t);
 
@@ -116,13 +134,11 @@ std::pair<double, double> runFilter(KalmanFilter* filter, const flight_data_t& f
 
             k++;
         }
+
+        predictions.push_back({filter->getApogee().first, t});
     }
 
-    std::pair<double, double> apogeeResult = filter->getApogee();
-    double apogee = apogeeResult.first;
-    double apogeeStd = apogeeResult.second;
-
-    return {apogee, apogeeStd};
+    return predictions;
 }
 
 flight_data_t readFlightDataFromCSV(const std::string& filename);
@@ -140,33 +156,42 @@ int main(int argc, char const *argv[])
     const double endTime = 30000;
     flightData.filter(startTime, endTime);
 
-    double t = 0;
+    const double initialT = 0;
 
     Eigen::Vector4d initialState(flightData.baro_altitude[0], 0, 0, 1000);
     RMMatrix4x4d initialCovariance = 0.01 * RMMatrix4x4d::Identity();
 
     std::vector<std::pair<std::string, std::unique_ptr<KalmanFilter>>> filters;
-    filters.emplace_back("EKF Constant Acceleration", std::make_unique<EKFConstantAcceleration>(initialState, initialCovariance, sigma_Q, sigma_Q_Cb, measurement_sigma_acc, measurement_sigma_bar, t));
-    filters.emplace_back("EKF Constant CB", std::make_unique<EKFConstantCB>(initialState, initialCovariance, sigma_Q, sigma_Q_Cb, measurement_sigma_acc, measurement_sigma_bar, t));
-    filters.emplace_back("UKF Constant Acceleration", std::make_unique<UKFConstantAcceleration>(initialState, initialCovariance, sigma_Q, sigma_Q_Cb, measurement_sigma_acc, measurement_sigma_bar, t));
-    filters.emplace_back("UKF Constant CB", std::make_unique<UKFConstantCB>(initialState, initialCovariance, sigma_Q, sigma_Q_Cb, measurement_sigma_acc, measurement_sigma_bar, t));
-    filters.emplace_back("CKF Constant Acceleration", std::make_unique<CKFConstantAcceleration>(initialState, initialCovariance, sigma_Q, sigma_Q_Cb, measurement_sigma_acc, measurement_sigma_bar, t));
-    filters.emplace_back("CKF Constant CB", std::make_unique<CKFConstantCB>(initialState, initialCovariance, sigma_Q, sigma_Q_Cb, measurement_sigma_acc, measurement_sigma_bar, t));
+    filters.emplace_back("EKF Constant Acceleration", std::make_unique<EKFConstantAcceleration>(initialState, initialCovariance, sigma_Q, sigma_Q_Cb, measurement_sigma_acc, measurement_sigma_bar, initialT));
+    filters.emplace_back("EKF Constant CB", std::make_unique<EKFConstantCB>(initialState, initialCovariance, sigma_Q, sigma_Q_Cb, measurement_sigma_acc, measurement_sigma_bar, initialT));
+    filters.emplace_back("UKF Constant Acceleration", std::make_unique<UKFConstantAcceleration>(initialState, initialCovariance, sigma_Q, sigma_Q_Cb, measurement_sigma_acc, measurement_sigma_bar, initialT));
+    filters.emplace_back("UKF Constant CB", std::make_unique<UKFConstantCB>(initialState, initialCovariance, sigma_Q, sigma_Q_Cb, measurement_sigma_acc, measurement_sigma_bar, initialT));
+    filters.emplace_back("CKF Constant Acceleration", std::make_unique<CKFConstantAcceleration>(initialState, initialCovariance, sigma_Q, sigma_Q_Cb, measurement_sigma_acc, measurement_sigma_bar, initialT));
+    filters.emplace_back("CKF Constant CB", std::make_unique<CKFConstantCB>(initialState, initialCovariance, sigma_Q, sigma_Q_Cb, measurement_sigma_acc, measurement_sigma_bar, initialT));
 
-    for (const std::pair<std::string, std::unique_ptr<KalmanFilter>>& filter_pair : filters)
+    std::cout << std::left << std::setw(30) << "Filter"
+              << std::setw(20) << "Final Apogee (m)"
+              << std::setw(25) << "Mean Percentage Error"
+              << std::setw(20) << "Execution Time (ms)" << std::endl;
+    std::cout << std::string(95, '-') << std::endl;
+
+    for (const std::pair<std::string, std::unique_ptr<KalmanFilter>>& filterPair : filters)
     {
-        auto start_time = std::chrono::high_resolution_clock::now();
+        auto startTime = std::chrono::high_resolution_clock::now();
 
-        std::pair<double, double> apogeeResult = runFilter(filter_pair.second.get(), flightData, apogeeTime, 0.01);
-        double apogee = apogeeResult.first;
-        double apogeeStd = apogeeResult.second;
+        std::vector<std::pair<double, double>> apogeeResults = runFilter(filterPair.second.get(), flightData, apogeeTime, 0.01);
+        const double finalApogee = apogeeResults.at(apogeeResults.size()-1).first;
+        const double meanPercentageError = calculateMeanPercentageError(apogeeResults);
 
-        auto end_time = std::chrono::high_resolution_clock::now();
+        auto endTime = std::chrono::high_resolution_clock::now();
 
-        const std::chrono::duration<double, std::milli> elapsed = end_time - start_time;
+        const std::chrono::duration<double, std::milli> elapsed = endTime - startTime;
         const double elapsedTimeMS = elapsed.count();
 
-        std::cout << filter_pair.first << " Apogee: " << apogee << " +/- " << apogeeStd << "m (Execution Time: " << elapsedTimeMS << " ms)" << std::endl;
+        std::cout << std::left << std::setw(30) << filterPair.first
+                  << std::setw(20) << finalApogee
+                  << std::setw(25) << meanPercentageError
+                  << std::setw(20) << elapsedTimeMS << std::endl;
     }
 
     return 0;
